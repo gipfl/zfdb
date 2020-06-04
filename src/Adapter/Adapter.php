@@ -71,14 +71,14 @@ abstract class Adapter
      *
      * @var string
      */
-    protected $_defaultStmtClass = 'Zend_Db_Statement';
+    protected $_defaultStmtClass = Statement::class;
 
     /**
      * Default class name for the profiler object.
      *
      * @var string
      */
-    protected $_defaultProfilerClass = 'Zend_Db_Profiler';
+    protected $_defaultProfilerClass = Profiler::class;
 
     /**
      * Database connection
