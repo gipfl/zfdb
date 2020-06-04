@@ -26,11 +26,12 @@ namespace gipfl\ZfDb\Adapter\Exception;
  */
 class AdapterExceptionOracle extends AdapterException
 {
-   protected $message = 'Unknown exception';
-   protected $code = 0;
+    protected $message = 'Unknown exception';
+    protected $code = 0;
 
-   public function __construct($error = null, $code = 0) {
-       if (is_array($error)) {
+    public function __construct($error = null, $code = 0)
+    {
+        if (is_array($error)) {
             if (!isset($error['offset'])) {
                 $this->message = $error['code'] .' '. $error['message'];
             } else {
@@ -40,11 +41,11 @@ class AdapterExceptionOracle extends AdapterException
                                . substr($error['sqltext'], $error['offset']);
             }
             $this->code = $error['code'];
-       } else if (is_string($error)) {
-           $this->message = $error;
-       }
-       if (!$this->code && $code) {
-           $this->code = $code;
-       }
-   }
+        } elseif (is_string($error)) {
+            $this->message = $error;
+        }
+        if (!$this->code && $code) {
+            $this->code = $code;
+        }
+    }
 }

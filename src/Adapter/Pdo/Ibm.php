@@ -250,7 +250,7 @@ class Ibm extends PdoAdapter
         $newbind = array();
         if (is_array($bind)) {
             foreach ($bind as $name => $value) {
-                if($value !== null) {
+                if ($value !== null) {
                     $newbind[$name] = $value;
                 }
             }
@@ -269,8 +269,8 @@ class Ibm extends PdoAdapter
      */
     public function limit($sql, $count, $offset = 0)
     {
-       $this->_connect();
-       return $this->_serverType->limit($sql, $count, $offset);
+        $this->_connect();
+        return $this->_serverType->limit($sql, $count, $offset);
     }
 
     /**
@@ -285,7 +285,7 @@ class Ibm extends PdoAdapter
     {
         $this->_connect();
 
-         if ($tableName !== null) {
+        if ($tableName !== null) {
             $sequenceName = $tableName;
             if ($primaryKey) {
                 $sequenceName .= "_$primaryKey";
@@ -332,7 +332,9 @@ class Ibm extends PdoAdapter
     public function getServerVersion()
     {
         try {
-            $stmt = $this->query('SELECT service_level, fixpack_num FROM TABLE (sysproc.env_get_inst_info()) as INSTANCEINFO');
+            $stmt = $this->query(
+                'SELECT service_level, fixpack_num FROM TABLE (sysproc.env_get_inst_info()) as INSTANCEINFO'
+            );
             $result = $stmt->fetchAll(Db::FETCH_NUM);
             if (count($result)) {
                 $matches = null;

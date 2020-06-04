@@ -102,7 +102,9 @@ class Oracle extends Adapter
         }
 
         if (!extension_loaded('oci8')) {
-            throw new AdapterExceptionOracle('The OCI8 extension is required for this adapter but the extension is not loaded');
+            throw new AdapterExceptionOracle(
+                'The OCI8 extension is required for this adapter but the extension is not loaded'
+            );
         }
 
         $this->_setExecuteMode(OCI_COMMIT_ON_SUCCESS);
@@ -110,10 +112,11 @@ class Oracle extends Adapter
         $connectionFuncName = ($this->_config['persistent'] == true) ? 'oci_pconnect' : 'oci_connect';
 
         $this->_connection = @$connectionFuncName(
-                $this->_config['username'],
-                $this->_config['password'],
-                $this->_config['dbname'],
-                $this->_config['charset']);
+            $this->_config['username'],
+            $this->_config['password'],
+            $this->_config['dbname'],
+            $this->_config['charset']
+        );
 
         // check the connection
         if (!$this->_connection) {
@@ -129,9 +132,9 @@ class Oracle extends Adapter
     public function isConnected()
     {
         return ((bool) (is_resource($this->_connection)
-                    && (get_resource_type($this->_connection) == 'oci8 connection'
-                     || get_resource_type($this->_connection) == 'oci8 persistent connection')));
-        }
+            && (get_resource_type($this->_connection) == 'oci8 connection'
+            || get_resource_type($this->_connection) == 'oci8 persistent connection')));
+    }
 
     /**
      * Force the connection to close.
@@ -339,7 +342,8 @@ class Oracle extends Adapter
                     TC.DATA_SCALE, TC.DATA_PRECISION, C.CONSTRAINT_TYPE, CC.POSITION
                 FROM ALL_TAB_COLUMNS TC
                 LEFT JOIN (ALL_CONS_COLUMNS CC JOIN ALL_CONSTRAINTS C
-                    ON (CC.CONSTRAINT_NAME = C.CONSTRAINT_NAME AND CC.TABLE_NAME = C.TABLE_NAME AND CC.OWNER = C.OWNER AND C.CONSTRAINT_TYPE = 'P'))
+                    ON (CC.CONSTRAINT_NAME = C.CONSTRAINT_NAME AND CC.TABLE_NAME = C.TABLE_NAME
+                      AND CC.OWNER = C.OWNER AND C.CONSTRAINT_TYPE = 'P'))
                   ON TC.TABLE_NAME = CC.TABLE_NAME AND TC.COLUMN_NAME = CC.COLUMN_NAME
                 WHERE UPPER(TC.TABLE_NAME) = UPPER(:TBNAME)";
             $bind[':TBNAME'] = $tableName;
@@ -366,7 +370,8 @@ class Oracle extends Adapter
                     TC.DATA_SCALE, TC.DATA_PRECISION, CC.CONSTRAINT_TYPE, CC.POSITION
                 FROM ALL_TAB_COLUMNS TC, ($subSql) CC
                 WHERE UPPER(TC.TABLE_NAME) = UPPER(:TBNAME)
-                  AND TC.OWNER = CC.OWNER(+) AND TC.TABLE_NAME = CC.TABLE_NAME(+) AND TC.COLUMN_NAME = CC.COLUMN_NAME(+)";
+                  AND TC.OWNER = CC.OWNER(+) AND TC.TABLE_NAME = CC.TABLE_NAME(+)
+                  AND TC.COLUMN_NAME = CC.COLUMN_NAME(+)";
             if ($schemaName) {
                 $sql .= ' AND UPPER(TC.OWNER) = UPPER(:SCNAME)';
             }
@@ -531,7 +536,7 @@ class Oracle extends Adapter
      */
     private function _setExecuteMode($mode)
     {
-        switch($mode) {
+        switch ($mode) {
             case OCI_COMMIT_ON_SUCCESS:
             case OCI_DEFAULT:
             case OCI_DESCRIBE_ONLY:

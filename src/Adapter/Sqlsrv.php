@@ -109,7 +109,9 @@ class Sqlsrv extends Adapter
         }
 
         if (!extension_loaded('sqlsrv')) {
-            throw new AdapterExceptionSqlsrv('The Sqlsrv extension is required for this adapter but the extension is not loaded');
+            throw new AdapterExceptionSqlsrv(
+                'The Sqlsrv extension is required for this adapter but the extension is not loaded'
+            );
         }
 
         $serverName = $this->_config['host'];
@@ -122,8 +124,7 @@ class Sqlsrv extends Adapter
             'Database' => $this->_config['dbname'],
         );
 
-        if (isset($this->_config['username']) && isset($this->_config['password']))
-        {
+        if (isset($this->_config['username']) && isset($this->_config['password'])) {
             $connectionInfo += array(
                 'UID'      => $this->_config['username'],
                 'PWD'      => $this->_config['password'],
@@ -163,17 +164,25 @@ class Sqlsrv extends Adapter
     {
         // we need at least a dbname
         if (! array_key_exists('dbname', $config)) {
-            throw new AdapterException("Configuration array must have a key for 'dbname' that names the database instance");
+            throw new AdapterException(
+                "Configuration array must have a key for 'dbname' that names the database instance"
+            );
         }
 
         if (! array_key_exists('password', $config) && array_key_exists('username', $config)) {
-            throw new AdapterException("Configuration array must have a key for 'password' for login credentials.
-                                                If Windows Authentication is desired, both keys 'username' and 'password' should be ommited from config.");
+            throw new AdapterException(
+                "Configuration array must have a key for 'password' for login credentials."
+                . " If Windows Authentication is desired, both keys 'username' and 'password'"
+                . " should be ommited from config."
+            );
         }
 
         if (array_key_exists('password', $config) && !array_key_exists('username', $config)) {
-            throw new AdapterException("Configuration array must have a key for 'username' for login credentials.
-                                                If Windows Authentication is desired, both keys 'username' and 'password' should be ommited from config.");
+            throw new AdapterException(
+                "Configuration array must have a key for 'username' for login credentials."
+                . " If Windows Authentication is desired, both keys 'username' and 'password'"
+                . " should be ommited from config."
+            );
         }
     }
 
@@ -190,8 +199,7 @@ class Sqlsrv extends Adapter
         $sql = null;
 
         // Default transaction level in sql server
-        if ($level === null)
-        {
+        if ($level === null) {
             $level = SQLSRV_TXN_READ_COMMITTED;
         }
 
@@ -553,8 +561,8 @@ class Sqlsrv extends Adapter
      * @return string
      * @throws AdapterException
      */
-     public function limit($sql, $count, $offset = 0)
-     {
+    public function limit($sql, $count, $offset = 0)
+    {
         $count = intval($count);
         if ($count <= 0) {
             throw new AdapterException("LIMIT argument count=$count is not valid");
@@ -587,10 +595,10 @@ class Sqlsrv extends Adapter
 
             if ($count == PHP_INT_MAX) {
                 $sql = "WITH outer_tbl AS ($sql) SELECT * FROM outer_tbl WHERE \"ZEND_DB_ROWNUM\" >= $start";
-            }
-            else {
+            } else {
                 $end = $offset + $count;
-                $sql = "WITH outer_tbl AS ($sql) SELECT * FROM outer_tbl WHERE \"ZEND_DB_ROWNUM\" BETWEEN $start AND $end";
+                $sql = "WITH outer_tbl AS ($sql) SELECT * FROM outer_tbl"
+                    . " WHERE \"ZEND_DB_ROWNUM\" BETWEEN $start AND $end";
             }
         }
 

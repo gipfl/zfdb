@@ -95,7 +95,9 @@ class Sqlite extends PdoAdapter
     {
         // we need at least a dbname
         if (! array_key_exists('dbname', $config)) {
-            throw new AdapterException("Configuration array must have a key for 'dbname' that names the database instance");
+            throw new AdapterException(
+                "Configuration array must have a key for 'dbname' that names the database instance"
+            );
         }
     }
 
@@ -212,7 +214,7 @@ class Sqlite extends PdoAdapter
             if (preg_match('/^((?:var)?char)\((\d+)\)/i', $row[$type], $matches)) {
                 $row[$type] = $matches[1];
                 $length = $matches[2];
-            } else if (preg_match('/^decimal\((\d+),(\d+)\)/i', $row[$type], $matches)) {
+            } elseif (preg_match('/^decimal\((\d+),(\d+)\)/i', $row[$type], $matches)) {
                 $row[$type] = 'DECIMAL';
                 $precision = $matches[1];
                 $scale = $matches[2];

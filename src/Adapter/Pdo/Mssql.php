@@ -162,7 +162,8 @@ class Mssql extends PdoAdapter
      * It is necessary to override the abstract PDO transaction functions here, as
      * the PDO driver for MSSQL does not support transactions.
      */
-    protected function _rollBack() {
+    protected function _rollBack()
+    {
         $this->_connect();
         $this->_connection->exec('ROLLBACK TRANSACTION');
         return true;
@@ -306,8 +307,8 @@ class Mssql extends PdoAdapter
      * @throws AdapterException
      * @return string
      */
-     public function limit($sql, $count, $offset = 0)
-     {
+    public function limit($sql, $count, $offset = 0)
+    {
         $count = intval($count);
         if ($count <= 0) {
             throw new AdapterException("LIMIT argument count=$count is not valid");
@@ -322,7 +323,7 @@ class Mssql extends PdoAdapter
             '/^SELECT\s+(DISTINCT\s)?/i',
             'SELECT $1TOP ' . ($count+$offset) . ' ',
             $sql
-            );
+        );
 
         if ($offset > 0) {
             $orderby = stristr($sql, 'ORDER BY');

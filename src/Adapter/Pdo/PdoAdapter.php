@@ -86,7 +86,9 @@ abstract class PdoAdapter extends Adapter
 
         // check for PDO extension
         if (!extension_loaded('pdo')) {
-            throw new AdapterException('The PDO extension is required for this adapter but the extension is not loaded');
+            throw new AdapterException(
+                'The PDO extension is required for this adapter but the extension is not loaded'
+            );
         }
 
         // check the PDO driver is available
@@ -117,7 +119,6 @@ abstract class PdoAdapter extends Adapter
 
             // always use exceptions.
             $this->_connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
         } catch (PDOException $e) {
             $message = $e->getMessage();
             if ($e->getPrevious() !== null && preg_match('~^SQLSTATE\[HY000\] \[\d{1,4}\]\s$~', $message)) {
@@ -287,7 +288,8 @@ abstract class PdoAdapter extends Adapter
     /**
      * Roll-back a transaction.
      */
-    protected function _rollBack() {
+    protected function _rollBack()
+    {
         $this->_connect();
         $this->_connection->rollBack();
     }
@@ -305,10 +307,9 @@ abstract class PdoAdapter extends Adapter
     {
         //check for PDO extension
         if (!extension_loaded('pdo')) {
-            /**
-             * @see AdapterException
-             */
-            throw new AdapterException('The PDO extension is required for this adapter but the extension is not loaded');
+            throw new AdapterException(
+                'The PDO extension is required for this adapter but the extension is not loaded'
+            );
         }
         switch ($mode) {
             case PDO::FETCH_LAZY:

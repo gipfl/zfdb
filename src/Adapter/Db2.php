@@ -109,7 +109,9 @@ class Db2 extends Adapter
         }
 
         if (!extension_loaded('ibm_db2')) {
-            throw new AdapterExceptionDb2('The IBM DB2 extension is required for this adapter but the extension is not loaded');
+            throw new AdapterExceptionDb2(
+                'The IBM DB2 extension is required for this adapter but the extension is not loaded'
+            );
         }
 
         $this->_determineI5();
@@ -132,7 +134,8 @@ class Db2 extends Adapter
                 Db::CASE_UPPER   => DB2_CASE_UPPER,
                 Db::CASE_LOWER   => DB2_CASE_LOWER
             );
-            $this->_config['driver_options']['DB2_ATTR_CASE'] = $caseAttrMap[$this->_config['options'][Db::CASE_FOLDING]];
+            $this->_config['driver_options']['DB2_ATTR_CASE']
+                = $caseAttrMap[$this->_config['options'][Db::CASE_FOLDING]];
         }
 
         if ($this->_isI5 && isset($this->_config['driver_options']['i5_naming'])) {
@@ -355,7 +358,6 @@ class Db2 extends Adapter
         }
 
         if (!$this->_isI5) {
-
             $sql = "SELECT DISTINCT c.tabschema, c.tabname, c.colname, c.colno,
                 c.typename, c.default, c.nulls, c.length, c.scale,
                 c.identity, tc.type AS tabconsttype, k.colseq
@@ -371,13 +373,11 @@ class Db2 extends Adapter
                 . $this->quoteInto('UPPER(c.tabname) = UPPER(?)', $tableName);
 
             if ($schemaName) {
-               $sql .= $this->quoteInto(' AND UPPER(c.tabschema) = UPPER(?)', $schemaName);
+                $sql .= $this->quoteInto(' AND UPPER(c.tabschema) = UPPER(?)', $schemaName);
             }
 
             $sql .= " ORDER BY c.colno";
-
         } else {
-
             // DB2 On I5 specific query
             $sql = "SELECT DISTINCT C.TABLE_SCHEMA, C.TABLE_NAME, C.COLUMN_NAME, C.ORDINAL_POSITION,
                 C.DATA_TYPE, C.COLUMN_DEFAULT, C.NULLS ,C.LENGTH, C.SCALE, LEFT(C.IDENTITY,1),
@@ -565,7 +565,8 @@ class Db2 extends Adapter
              */
             throw new AdapterExceptionDb2(
                 db2_conn_errormsg($this->_connection),
-                db2_conn_error($this->_connection));
+                db2_conn_error($this->_connection)
+            );
         }
 
         $this->_setExecuteMode(DB2_AUTOCOMMIT_ON);
@@ -584,7 +585,8 @@ class Db2 extends Adapter
              */
             throw new AdapterExceptionDb2(
                 db2_conn_errormsg($this->_connection),
-                db2_conn_error($this->_connection));
+                db2_conn_error($this->_connection)
+            );
         }
         $this->_setExecuteMode(DB2_AUTOCOMMIT_ON);
     }
@@ -682,7 +684,9 @@ class Db2 extends Adapter
         if ($server_info !== false) {
             $version = $server_info->DBMS_VER;
             if ($this->_isI5) {
-                $version = (int) substr($version, 0, 2) . '.' . (int) substr($version, 2, 2) . '.' . (int) substr($version, 4);
+                $version = (int) substr($version, 0, 2)
+                    . '.' . (int) substr($version, 2, 2)
+                    . '.' . (int) substr($version, 4);
             }
             return $version;
         } else {
@@ -716,7 +720,7 @@ class Db2 extends Adapter
         $this->_isI5 = (php_uname('s') == 'OS400') ? true : false;
 
         // if this is set, then us it
-        if (isset($this->_config['os'])){
+        if (isset($this->_config['os'])) {
             if (strtolower($this->_config['os']) === 'i5') {
                 $this->_isI5 = true;
             } else {
@@ -724,7 +728,6 @@ class Db2 extends Adapter
                 $this->_isI5 = false;
             }
         }
-
     }
 
     /**
@@ -741,7 +744,7 @@ class Db2 extends Adapter
         $tables = array();
         if ($schema) {
             $tablesStatement = db2_tables($this->_connection, null, $schema);
-            while ($rowTables = db2_fetch_assoc($tablesStatement) ) {
+            while ($rowTables = db2_fetch_assoc($tablesStatement)) {
                 if ($rowTables['TABLE_NAME'] !== null) {
                     $tables[] = $rowTables['TABLE_NAME'];
                 }
@@ -753,7 +756,7 @@ class Db2 extends Adapter
                     // list of the tables which belongs to the selected library
                     $tablesStatement = db2_tables($this->_connection, null, $schema['TABLE_SCHEM']);
                     if (is_resource($tablesStatement)) {
-                        while ($rowTables = db2_fetch_assoc($tablesStatement) ) {
+                        while ($rowTables = db2_fetch_assoc($tablesStatement)) {
                             if ($rowTables['TABLE_NAME'] !== null) {
                                 $tables[] = $rowTables['TABLE_NAME'];
                             }
@@ -775,7 +778,7 @@ class Db2 extends Adapter
             return $value;
         }
 
-        if (strtoupper($idType) === 'S'){
+        if (strtoupper($idType) === 'S') {
             //check i5_lib option
             $sequenceName = $objectName;
             return $this->lastSequenceId($sequenceName);

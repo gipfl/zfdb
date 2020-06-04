@@ -194,15 +194,15 @@ class Mysqli extends Adapter
             if (preg_match('/^((?:var)?char)\((\d+)\)/', $row['Type'], $matches)) {
                 $row['Type'] = $matches[1];
                 $row['Length'] = $matches[2];
-            } else if (preg_match('/^decimal\((\d+),(\d+)\)/', $row['Type'], $matches)) {
+            } elseif (preg_match('/^decimal\((\d+),(\d+)\)/', $row['Type'], $matches)) {
                 $row['Type'] = 'decimal';
                 $row['Precision'] = $matches[1];
                 $row['Scale'] = $matches[2];
-            } else if (preg_match('/^float\((\d+),(\d+)\)/', $row['Type'], $matches)) {
+            } elseif (preg_match('/^float\((\d+),(\d+)\)/', $row['Type'], $matches)) {
                 $row['Type'] = 'float';
                 $row['Precision'] = $matches[1];
                 $row['Scale'] = $matches[2];
-            } else if (preg_match('/^((?:big|medium|small|tiny)?int)\((\d+)\)/', $row['Type'], $matches)) {
+            } elseif (preg_match('/^((?:big|medium|small|tiny)?int)\((\d+)\)/', $row['Type'], $matches)) {
                 $row['Type'] = $matches[1];
                 /**
                  * The optional argument of a MySQL int type is not precision
@@ -253,7 +253,9 @@ class Mysqli extends Adapter
         }
 
         if (!extension_loaded('mysqli')) {
-            throw new StatementExceptionMysqli('The Mysqli extension is required for this adapter but the extension is not loaded');
+            throw new StatementExceptionMysqli(
+                'The Mysqli extension is required for this adapter but the extension is not loaded'
+            );
         }
 
         if (isset($this->_config['port'])) {
@@ -270,14 +272,15 @@ class Mysqli extends Adapter
 
         $this->_connection = mysqli_init();
 
-        if(!empty($this->_config['driver_options'])) {
-            foreach($this->_config['driver_options'] as $option=>$value) {
-                if(is_string($option)) {
+        if (!empty($this->_config['driver_options'])) {
+            foreach ($this->_config['driver_options'] as $option => $value) {
+                if (is_string($option)) {
                     // Suppress warnings here
                     // Ignore it if it's not a valid constant
                     $option = @constant(strtoupper($option));
-                    if($option === null)
+                    if ($option === null) {
                         continue;
+                    }
                 }
                 mysqli_options($this->_connection, $option, $value);
             }
@@ -296,7 +299,6 @@ class Mysqli extends Adapter
         );
 
         if ($_isConnected === false || mysqli_connect_errno()) {
-
             $this->closeConnection();
             throw new StatementExceptionMysqli(mysqli_connect_error());
         }
