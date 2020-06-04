@@ -12,36 +12,25 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Select
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb;
 
-
-/**
- * @see Zend_Db_Adapter_Abstract
- */
-
-/**
- * @see Zend_Db_Expr
- */
-
+use gipfl\ZfDb\Adapter\Adapter;
+use gipfl\ZfDb\Exception\DbException;
+use gipfl\ZfDb\Exception\SelectException;
+use PDOStatement;
 
 /**
  * Class for SQL SELECT generation and results.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Select
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Select
+class Select
 {
-
     const DISTINCT       = 'distinct';
     const COLUMNS        = 'columns';
     const FROM           = 'from';
@@ -110,7 +99,7 @@ class Zend_Db_Select
     /**
      * Zend_Db_Adapter_Abstract object.
      *
-     * @var Zend_Db_Adapter_Abstract
+     * @var Adapter
      */
     protected $_adapter;
 
@@ -177,9 +166,9 @@ class Zend_Db_Select
     /**
      * Class constructor
      *
-     * @param Zend_Db_Adapter_Abstract $adapter
+     * @param Adapter $adapter
      */
-    public function __construct(Zend_Db_Adapter_Abstract $adapter)
+    public function __construct(Adapter $adapter)
     {
         $this->_adapter = $adapter;
         $this->_parts = self::$_partsInit;
@@ -199,7 +188,7 @@ class Zend_Db_Select
      * Set bind variables
      *
      * @param mixed $bind
-     * @return Zend_Db_Select
+     * @return Select
      */
     public function bind($bind)
     {
@@ -212,7 +201,7 @@ class Zend_Db_Select
      * Makes the query SELECT DISTINCT.
      *
      * @param bool $flag Whether or not the SELECT is DISTINCT (default true).
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function distinct($flag = true)
     {
@@ -238,11 +227,11 @@ class Zend_Db_Select
      * no correlation name is generated or prepended to the columns named
      * in the second parameter.
      *
-     * @param  array|string|Zend_Db_Expr $name The table name or an associative array
+     * @param  array|string|Expr $name The table name or an associative array
      *                                         relating correlation name to table name.
-     * @param  array|string|Zend_Db_Expr $cols The columns to select from this table.
+     * @param  array|string|Expr $cols The columns to select from this table.
      * @param  string $schema The schema name to specify, if any.
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function from($name, $cols = '*', $schema = null)
     {
@@ -255,9 +244,9 @@ class Zend_Db_Select
      * The parameter can be a single string or Zend_Db_Expr object,
      * or else an array of strings or Zend_Db_Expr objects.
      *
-     * @param  array|string|Zend_Db_Expr $cols The columns to select from this table.
+     * @param  array|string|Expr $cols The columns to select from this table.
      * @param  string $correlationName Correlation name of target table. OPTIONAL
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function columns($cols = '*', $correlationName = null)
     {
@@ -267,10 +256,7 @@ class Zend_Db_Select
         }
 
         if (!array_key_exists($correlationName, $this->_parts[self::FROM])) {
-            /**
-             * @see Zend_Db_Select_Exception
-             */
-            throw new Zend_Db_Select_Exception("No table has been specified for the FROM clause");
+            throw new SelectException("No table has been specified for the FROM clause");
         }
 
         $this->_tableCols($correlationName, $cols);
@@ -293,18 +279,18 @@ class Zend_Db_Select
      * </code>
      *
      * @param  array $select Array of select clauses for the union.
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function union($select = array(), $type = self::SQL_UNION)
     {
         if (!is_array($select)) {
-            throw new Zend_Db_Select_Exception(
+            throw new SelectException(
                 "union() only accepts an array of Zend_Db_Select instances of sql query strings."
             );
         }
 
         if (!in_array($type, self::$_unionTypes)) {
-            throw new Zend_Db_Select_Exception("Invalid union type '{$type}'");
+            throw new SelectException("Invalid union type '{$type}'");
         }
 
         foreach ($select as $target) {
@@ -320,11 +306,11 @@ class Zend_Db_Select
      * The $name and $cols parameters follow the same logic
      * as described in the from() method.
      *
-     * @param  array|string|Zend_Db_Expr $name The table name.
+     * @param  array|string|Expr $name The table name.
      * @param  string $cond Join on this condition.
      * @param  array|string $cols The columns to select from the joined table.
      * @param  string $schema The database name to specify, if any.
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function join($name, $cond, $cols = self::SQL_WILDCARD, $schema = null)
     {
@@ -341,11 +327,11 @@ class Zend_Db_Select
      * The $name and $cols parameters follow the same logic
      * as described in the from() method.
      *
-     * @param  array|string|Zend_Db_Expr $name The table name.
+     * @param  array|string|Expr $name The table name.
      * @param  string $cond Join on this condition.
      * @param  array|string $cols The columns to select from the joined table.
      * @param  string $schema The database name to specify, if any.
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function joinInner($name, $cond, $cols = self::SQL_WILDCARD, $schema = null)
     {
@@ -362,11 +348,11 @@ class Zend_Db_Select
      * The $name and $cols parameters follow the same logic
      * as described in the from() method.
      *
-     * @param  array|string|Zend_Db_Expr $name The table name.
+     * @param  array|string|Expr $name The table name.
      * @param  string $cond Join on this condition.
      * @param  array|string $cols The columns to select from the joined table.
      * @param  string $schema The database name to specify, if any.
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function joinLeft($name, $cond, $cols = self::SQL_WILDCARD, $schema = null)
     {
@@ -384,11 +370,11 @@ class Zend_Db_Select
      * The $name and $cols parameters follow the same logic
      * as described in the from() method.
      *
-     * @param  array|string|Zend_Db_Expr $name The table name.
+     * @param  array|string|Expr $name The table name.
      * @param  string $cond Join on this condition.
      * @param  array|string $cols The columns to select from the joined table.
      * @param  string $schema The database name to specify, if any.
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function joinRight($name, $cond, $cols = self::SQL_WILDCARD, $schema = null)
     {
@@ -406,11 +392,11 @@ class Zend_Db_Select
      * The $name and $cols parameters follow the same logic
      * as described in the from() method.
      *
-     * @param  array|string|Zend_Db_Expr $name The table name.
+     * @param  array|string|Expr $name The table name.
      * @param  string $cond Join on this condition.
      * @param  array|string $cols The columns to select from the joined table.
      * @param  string $schema The database name to specify, if any.
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function joinFull($name, $cond, $cols = self::SQL_WILDCARD, $schema = null)
     {
@@ -424,10 +410,10 @@ class Zend_Db_Select
      * The $name and $cols parameters follow the same logic
      * as described in the from() method.
      *
-     * @param  array|string|Zend_Db_Expr $name The table name.
+     * @param  array|string|Expr $name The table name.
      * @param  array|string $cols The columns to select from the joined table.
      * @param  string $schema The database name to specify, if any.
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function joinCross($name, $cols = self::SQL_WILDCARD, $schema = null)
     {
@@ -444,10 +430,10 @@ class Zend_Db_Select
      * The $name and $cols parameters follow the same logic
      * as described in the from() method.
      *
-     * @param  array|string|Zend_Db_Expr $name The table name.
+     * @param  array|string|Expr $name The table name.
      * @param  array|string $cols The columns to select from the joined table.
      * @param  string $schema The database name to specify, if any.
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function joinNatural($name, $cols = self::SQL_WILDCARD, $schema = null)
     {
@@ -484,7 +470,7 @@ class Zend_Db_Select
      * @param string   $cond  The WHERE condition.
      * @param mixed    $value OPTIONAL The value to quote into the condition.
      * @param int      $type  OPTIONAL The type of the given value
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function where($cond, $value = null, $type = null)
     {
@@ -501,7 +487,7 @@ class Zend_Db_Select
      * @param string   $cond  The WHERE condition.
      * @param mixed    $value OPTIONAL The value to quote into the condition.
      * @param int      $type  OPTIONAL The type of the given value
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      *
      * @see where()
      */
@@ -516,7 +502,7 @@ class Zend_Db_Select
      * Adds grouping to the query.
      *
      * @param  array|string $spec The column(s) to group by.
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function group($spec)
     {
@@ -528,7 +514,7 @@ class Zend_Db_Select
             // Remove comments from SQL statement
             $noComments = preg_replace(self::REGEX_SQL_COMMENTS, '$1', (string) $val);
             if (preg_match(self::REGEX_COLUMN_EXPR_GROUP, $noComments)) {
-                $val = new Zend_Db_Expr($val);
+                $val = new Expr($val);
             }
             $this->_parts[self::GROUP][] = $val;
         }
@@ -546,7 +532,7 @@ class Zend_Db_Select
      * @param string $cond The HAVING condition.
      * @param mixed    $value OPTIONAL The value to quote into the condition.
      * @param int      $type  OPTIONAL The type of the given value
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function having($cond, $value = null, $type = null)
     {
@@ -571,7 +557,7 @@ class Zend_Db_Select
      * @param string $cond The HAVING condition.
      * @param mixed    $value OPTIONAL The value to quote into the condition.
      * @param int      $type  OPTIONAL The type of the given value
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      *
      * @see having()
      */
@@ -594,7 +580,7 @@ class Zend_Db_Select
      * Adds a row order to the query.
      *
      * @param mixed $spec The column(s) and direction to order by.
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function order($spec)
     {
@@ -604,7 +590,7 @@ class Zend_Db_Select
 
         // force 'ASC' or 'DESC' on each order spec, default is ASC.
         foreach ($spec as $val) {
-            if ($val instanceof Zend_Db_Expr) {
+            if ($val instanceof Expr) {
                 $expr = $val->__toString();
                 if (empty($expr)) {
                     continue;
@@ -622,7 +608,7 @@ class Zend_Db_Select
                 // Remove comments from SQL statement
                 $noComments = preg_replace(self::REGEX_SQL_COMMENTS, '$1', (string) $val);
                 if (preg_match(self::REGEX_COLUMN_EXPR_ORDER, $noComments)) {
-                    $val = new Zend_Db_Expr($val);
+                    $val = new Expr($val);
                 }
                 $this->_parts[self::ORDER][] = array($val, $direction);
             }
@@ -636,7 +622,7 @@ class Zend_Db_Select
      *
      * @param int $count OPTIONAL The number of rows to return.
      * @param int $offset OPTIONAL Start returning after this many rows.
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function limit($count = null, $offset = null)
     {
@@ -650,7 +636,7 @@ class Zend_Db_Select
      *
      * @param int $page Limit results to this page number.
      * @param int $rowCount Use this many rows per page.
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function limitPage($page, $rowCount)
     {
@@ -665,7 +651,7 @@ class Zend_Db_Select
      * Makes the query SELECT FOR UPDATE.
      *
      * @param bool $flag Whether or not the SELECT is FOR UPDATE (default true).
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function forUpdate($flag = true)
     {
@@ -678,13 +664,13 @@ class Zend_Db_Select
      *
      * @param string $part
      * @return mixed
-     * @throws Zend_Db_Select_Exception
+     * @throws SelectException
      */
     public function getPart($part)
     {
         $part = strtolower($part);
         if (!array_key_exists($part, $this->_parts)) {
-            throw new Zend_Db_Select_Exception("Invalid Select part '$part'");
+            throw new SelectException("Invalid Select part '$part'");
         }
         return $this->_parts[$part];
     }
@@ -694,7 +680,7 @@ class Zend_Db_Select
      *
      * @param integer $fetchMode OPTIONAL
      * @param  mixed  $bind An array of data to bind to the placeholders.
-     * @return PDO_Statement|Zend_Db_Statement
+     * @return PDOStatement|Statement
      */
     public function query($fetchMode = null, $bind = array())
     {
@@ -714,6 +700,7 @@ class Zend_Db_Select
      * Converts this object to an SQL SELECT string.
      *
      * @return string|null This object as a SELECT string. (or null if a string cannot be produced.)
+     * @throws SelectException
      */
     public function assemble()
     {
@@ -731,7 +718,7 @@ class Zend_Db_Select
      * Clear parts of the Select object, or an individual part.
      *
      * @param string $part OPTIONAL
-     * @return Zend_Db_Select
+     * @return Select
      */
     public function reset($part = null)
     {
@@ -747,7 +734,7 @@ class Zend_Db_Select
      * Gets the Zend_Db_Adapter_Abstract for this
      * particular Zend_Db_Select object.
      *
-     * @return Zend_Db_Adapter_Abstract
+     * @return Adapter
      */
     public function getAdapter()
     {
@@ -763,24 +750,21 @@ class Zend_Db_Select
      * as described in the from() method.
      *
      * @param  null|string $type Type of join; inner, left, and null are currently supported
-     * @param  array|string|Zend_Db_Expr $name Table name
+     * @param  array|string|Expr $name Table name
      * @param  string $cond Join on this condition
      * @param  array|string $cols The columns to select from the joined table
      * @param  string $schema The database name to specify, if any.
-     * @return Zend_Db_Select This Zend_Db_Select object
-     * @throws Zend_Db_Select_Exception
+     * @return Select This Zend_Db_Select object
+     * @throws SelectException
      */
     protected function _join($type, $name, $cond, $cols, $schema = null)
     {
         if (!in_array($type, self::$_joinTypes) && $type != self::FROM) {
-            /**
-             * @see Zend_Db_Select_Exception
-             */
-            throw new Zend_Db_Select_Exception("Invalid join type '$type'");
+            throw new SelectException("Invalid join type '$type'");
         }
 
         if (count($this->_parts[self::UNION])) {
-            throw new Zend_Db_Select_Exception("Invalid use of table with " . self::SQL_UNION);
+            throw new SelectException("Invalid use of table with " . self::SQL_UNION);
         }
 
         if (empty($name)) {
@@ -799,7 +783,7 @@ class Zend_Db_Select
                 }
                 break;
             }
-        } elseif ($name instanceof Zend_Db_Expr|| $name instanceof Zend_Db_Select) {
+        } elseif ($name instanceof Expr|| $name instanceof Select) {
             $tableName = $name;
             $correlationName = $this->_uniqueCorrelation('t');
         } elseif (preg_match('/^(.+)\s+AS\s+(.+)$/i', $name, $m)) {
@@ -819,9 +803,9 @@ class Zend_Db_Select
         if (!empty($correlationName)) {
             if (array_key_exists($correlationName, $this->_parts[self::FROM])) {
                 /**
-                 * @see Zend_Db_Select_Exception
+                 * @see SelectException
                  */
-                throw new Zend_Db_Select_Exception("You cannot define a correlation name '$correlationName' more than once");
+                throw new SelectException("You cannot define a correlation name '$correlationName' more than once");
             }
 
             if ($type == self::FROM) {
@@ -884,12 +868,12 @@ class Zend_Db_Select
      * * joinRightUsing
      * * joinLeftUsing
      *
-     * @return Zend_Db_Select This Zend_Db_Select object.
+     * @return Select This Zend_Db_Select object.
      */
     public function _joinUsing($type, $name, $cond, $cols = '*', $schema = null)
     {
         if (empty($this->_parts[self::FROM])) {
-            throw new Zend_Db_Select_Exception("You can only perform a joinUsing after specifying a FROM table");
+            throw new SelectException("You can only perform a joinUsing after specifying a FROM table");
         }
 
         $join  = $this->_adapter->quoteIdentifier(key($this->_parts[self::FROM]), true);
@@ -919,7 +903,7 @@ class Zend_Db_Select
             $c = is_string($k) ? $k : end($name);
         } else {
             // Extract just the last name of a qualified table name
-            $dot = strrpos($name,'.');
+            $dot = strrpos($name, '.');
             $c = ($dot === false) ? $name : substr($name, $dot+1);
         }
         for ($i = 2; array_key_exists($c, $this->_parts[self::FROM]); ++$i) {
@@ -960,7 +944,7 @@ class Zend_Db_Select
                 }
                 // Check for columns that look like functions and convert to Zend_Db_Expr
                 if (preg_match(self::REGEX_COLUMN_EXPR, (string) $col)) {
-                    $col = new Zend_Db_Expr($col);
+                    $col = new Expr($col);
                 } elseif (preg_match('/(.+)\.(.+)/', $col, $m)) {
                     $currentCorrelationName = $m[1];
                     $col = $m[2];
@@ -970,7 +954,6 @@ class Zend_Db_Select
         }
 
         if ($columnValues) {
-
             // should we attempt to prepend or insert these values?
             if ($afterCorrelationName === true || is_string($afterCorrelationName)) {
                 $tmpColumns = $this->_parts[self::COLUMNS];
@@ -1013,7 +996,7 @@ class Zend_Db_Select
     protected function _where($condition, $value = null, $type = null, $bool = true)
     {
         if (count($this->_parts[self::UNION])) {
-            throw new Zend_Db_Select_Exception("Invalid use of where clause with " . self::SQL_UNION);
+            throw new SelectException("Invalid use of where clause with " . self::SQL_UNION);
         }
 
         if ($value !== null) {
@@ -1096,11 +1079,11 @@ class Zend_Db_Select
         $columns = array();
         foreach ($this->_parts[self::COLUMNS] as $columnEntry) {
             list($correlationName, $column, $alias) = $columnEntry;
-            if ($column instanceof Zend_Db_Expr) {
+            if ($column instanceof Expr) {
                 $columns[] = $this->_adapter->quoteColumnAs($column, $alias, true);
             } else {
                 if ($column == self::SQL_WILDCARD) {
-                    $column = new Zend_Db_Expr(self::SQL_WILDCARD);
+                    $column = new Expr(self::SQL_WILDCARD);
                     $alias = null;
                 }
                 if (empty($correlationName)) {
@@ -1174,7 +1157,7 @@ class Zend_Db_Select
             $parts = count($this->_parts[self::UNION]);
             foreach ($this->_parts[self::UNION] as $cnt => $union) {
                 list($target, $type) = $union;
-                if ($target instanceof Zend_Db_Select) {
+                if ($target instanceof Select) {
                     $target = $target->assemble();
                 }
                 $sql .= $target;
@@ -1248,7 +1231,7 @@ class Zend_Db_Select
             $order = array();
             foreach ($this->_parts[self::ORDER] as $term) {
                 if (is_array($term)) {
-                    if(is_numeric($term[0]) && strval(intval($term[0])) == $term[0]) {
+                    if (is_numeric($term[0]) && strval(intval($term[0])) == $term[0]) {
                         $order[] = (int)trim($term[0]) . ' ' . $term[1];
                     } else {
                         $order[] = $this->_adapter->quoteIdentifier($term[0], true) . ' ' . $term[1];
@@ -1316,8 +1299,8 @@ class Zend_Db_Select
      *
      * @param string $method
      * @param array $args OPTIONAL Zend_Db_Table_Select query modifier
-     * @return Zend_Db_Select
-     * @throws Zend_Db_Select_Exception If an invalid method is called.
+     * @return Select
+     * @throws SelectException If an invalid method is called.
      */
     public function __call($method, array $args)
     {
@@ -1334,10 +1317,10 @@ class Zend_Db_Select
             if ($type) {
                 $type .= ' join';
                 if (!in_array($type, self::$_joinTypes)) {
-                    throw new Zend_Db_Select_Exception("Unrecognized method '$method()'");
+                    throw new SelectException("Unrecognized method '$method()'");
                 }
                 if (in_array($type, array(self::CROSS_JOIN, self::NATURAL_JOIN))) {
-                    throw new Zend_Db_Select_Exception("Cannot perform a joinUsing with method '$method()'");
+                    throw new SelectException("Cannot perform a joinUsing with method '$method()'");
                 }
             } else {
                 $type = self::INNER_JOIN;
@@ -1346,7 +1329,7 @@ class Zend_Db_Select
             return call_user_func_array(array($this, '_joinUsing'), $args);
         }
 
-        throw new Zend_Db_Select_Exception("Unrecognized method '$method()'");
+        throw new SelectException("Unrecognized method '$method()'");
     }
 
     /**
@@ -1358,11 +1341,10 @@ class Zend_Db_Select
     {
         try {
             $sql = $this->assemble();
-        } catch (Exception $e) {
+        } catch (DbException $e) {
             trigger_error($e->getMessage(), E_USER_WARNING);
             $sql = '';
         }
         return (string)$sql;
     }
-
 }

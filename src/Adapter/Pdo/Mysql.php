@@ -12,30 +12,22 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb\Adapter\Pdo;
 
-
-/**
- * @see Zend_Db_Adapter_Pdo_Abstract
- */
-
+use gipfl\ZfDb\Adapter\Exception\AdapterException;
+use gipfl\ZfDb\Db;
 
 /**
  * Class for connecting to MySQL databases and performing common operations.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Abstract
+class Mysql extends PdoAdapter
 {
 
     /**
@@ -57,27 +49,27 @@ class Zend_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Abstract
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-        Zend_Db::INT_TYPE    => Zend_Db::INT_TYPE,
-        Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
-        Zend_Db::FLOAT_TYPE  => Zend_Db::FLOAT_TYPE,
-        'INT'                => Zend_Db::INT_TYPE,
-        'INTEGER'            => Zend_Db::INT_TYPE,
-        'MEDIUMINT'          => Zend_Db::INT_TYPE,
-        'SMALLINT'           => Zend_Db::INT_TYPE,
-        'TINYINT'            => Zend_Db::INT_TYPE,
-        'BIGINT'             => Zend_Db::BIGINT_TYPE,
-        'SERIAL'             => Zend_Db::BIGINT_TYPE,
-        'DEC'                => Zend_Db::FLOAT_TYPE,
-        'DECIMAL'            => Zend_Db::FLOAT_TYPE,
-        'DOUBLE'             => Zend_Db::FLOAT_TYPE,
-        'DOUBLE PRECISION'   => Zend_Db::FLOAT_TYPE,
-        'FIXED'              => Zend_Db::FLOAT_TYPE,
-        'FLOAT'              => Zend_Db::FLOAT_TYPE
+        Db::INT_TYPE       => Db::INT_TYPE,
+        Db::BIGINT_TYPE    => Db::BIGINT_TYPE,
+        Db::FLOAT_TYPE     => Db::FLOAT_TYPE,
+        'INT'              => Db::INT_TYPE,
+        'INTEGER'          => Db::INT_TYPE,
+        'MEDIUMINT'        => Db::INT_TYPE,
+        'SMALLINT'         => Db::INT_TYPE,
+        'TINYINT'          => Db::INT_TYPE,
+        'BIGINT'           => Db::BIGINT_TYPE,
+        'SERIAL'           => Db::BIGINT_TYPE,
+        'DEC'              => Db::FLOAT_TYPE,
+        'DECIMAL'          => Db::FLOAT_TYPE,
+        'DOUBLE'           => Db::FLOAT_TYPE,
+        'DOUBLE PRECISION' => Db::FLOAT_TYPE,
+        'FIXED'            => Db::FLOAT_TYPE,
+        'FLOAT'            => Db::FLOAT_TYPE
     );
 
     /**
      * Override _dsn() and ensure that charset is incorporated in mysql
-     * @see Zend_Db_Adapter_Pdo_Abstract::_dsn()
+     * @see PdoAdapter::_dsn()
      */
     protected function _dsn()
     {
@@ -92,7 +84,7 @@ class Zend_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Abstract
      * Creates a PDO object and connects to the database.
      *
      * @return void
-     * @throws Zend_Db_Adapter_Exception
+     * @throws AdapterException
      */
     protected function _connect()
     {
@@ -170,7 +162,7 @@ class Zend_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Abstract
         $stmt = $this->query($sql);
 
         // Use FETCH_NUM so we are not dependent on the CASE attribute of the PDO connection
-        $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
+        $result = $stmt->fetchAll(Db::FETCH_NUM);
 
         $field   = 0;
         $type    = 1;
@@ -241,21 +233,19 @@ class Zend_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Abstract
      * @param  string $sql
      * @param  integer $count
      * @param  integer $offset OPTIONAL
-     * @throws Zend_Db_Adapter_Exception
+     * @throws AdapterException
      * @return string
      */
      public function limit($sql, $count, $offset = 0)
      {
         $count = intval($count);
         if ($count <= 0) {
-            /** @see Zend_Db_Adapter_Exception */
-            throw new Zend_Db_Adapter_Exception("LIMIT argument count=$count is not valid");
+            throw new AdapterException("LIMIT argument count=$count is not valid");
         }
 
         $offset = intval($offset);
         if ($offset < 0) {
-            /** @see Zend_Db_Adapter_Exception */
-            throw new Zend_Db_Adapter_Exception("LIMIT argument offset=$offset is not valid");
+            throw new AdapterException("LIMIT argument offset=$offset is not valid");
         }
 
         $sql .= " LIMIT $count";
@@ -265,5 +255,4 @@ class Zend_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Abstract
 
         return $sql;
     }
-
 }

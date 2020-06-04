@@ -12,30 +12,23 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb\Adapter\Pdo;
 
-
-/**
- * @see Zend_Db_Adapter_Pdo_Abstract
- */
-
+use gipfl\ZfDb\Adapter\Exception\AdapterException;
+use gipfl\ZfDb\Db;
+use PDOException;
 
 /**
  * Class for connecting to Microsoft SQL Server databases and performing common operations.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Adapter_Pdo_Mssql extends Zend_Db_Adapter_Pdo_Abstract
+class Mssql extends PdoAdapter
 {
     /**
      * PDO type.
@@ -56,19 +49,19 @@ class Zend_Db_Adapter_Pdo_Mssql extends Zend_Db_Adapter_Pdo_Abstract
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-        Zend_Db::INT_TYPE    => Zend_Db::INT_TYPE,
-        Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
-        Zend_Db::FLOAT_TYPE  => Zend_Db::FLOAT_TYPE,
-        'INT'                => Zend_Db::INT_TYPE,
-        'SMALLINT'           => Zend_Db::INT_TYPE,
-        'TINYINT'            => Zend_Db::INT_TYPE,
-        'BIGINT'             => Zend_Db::BIGINT_TYPE,
-        'DECIMAL'            => Zend_Db::FLOAT_TYPE,
-        'FLOAT'              => Zend_Db::FLOAT_TYPE,
-        'MONEY'              => Zend_Db::FLOAT_TYPE,
-        'NUMERIC'            => Zend_Db::FLOAT_TYPE,
-        'REAL'               => Zend_Db::FLOAT_TYPE,
-        'SMALLMONEY'         => Zend_Db::FLOAT_TYPE
+        Db::INT_TYPE    => Db::INT_TYPE,
+        Db::BIGINT_TYPE => Db::BIGINT_TYPE,
+        Db::FLOAT_TYPE  => Db::FLOAT_TYPE,
+        'INT'           => Db::INT_TYPE,
+        'SMALLINT'      => Db::INT_TYPE,
+        'TINYINT'       => Db::INT_TYPE,
+        'BIGINT'        => Db::BIGINT_TYPE,
+        'DECIMAL'       => Db::FLOAT_TYPE,
+        'FLOAT'         => Db::FLOAT_TYPE,
+        'MONEY'         => Db::FLOAT_TYPE,
+        'NUMERIC'       => Db::FLOAT_TYPE,
+        'REAL'          => Db::FLOAT_TYPE,
+        'SMALLMONEY'    => Db::FLOAT_TYPE
     );
 
     /**
@@ -234,7 +227,7 @@ class Zend_Db_Adapter_Pdo_Mssql extends Zend_Db_Adapter_Pdo_Abstract
         }
 
         $stmt = $this->query($sql);
-        $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
+        $result = $stmt->fetchAll(Db::FETCH_NUM);
 
         $table_name  = 2;
         $column_name = 3;
@@ -255,7 +248,7 @@ class Zend_Db_Adapter_Pdo_Mssql extends Zend_Db_Adapter_Pdo_Abstract
         }
 
         $stmt = $this->query($sql);
-        $primaryKeysResult = $stmt->fetchAll(Zend_Db::FETCH_NUM);
+        $primaryKeysResult = $stmt->fetchAll(Db::FETCH_NUM);
         $primaryKeyColumn = array();
         $pkey_column_name = 3;
         $pkey_key_seq = 4;
@@ -310,21 +303,19 @@ class Zend_Db_Adapter_Pdo_Mssql extends Zend_Db_Adapter_Pdo_Abstract
      * @param string $sql
      * @param integer $count
      * @param integer $offset OPTIONAL
-     * @throws Zend_Db_Adapter_Exception
+     * @throws AdapterException
      * @return string
      */
      public function limit($sql, $count, $offset = 0)
      {
         $count = intval($count);
         if ($count <= 0) {
-            /** @see Zend_Db_Adapter_Exception */
-            throw new Zend_Db_Adapter_Exception("LIMIT argument count=$count is not valid");
+            throw new AdapterException("LIMIT argument count=$count is not valid");
         }
 
         $offset = intval($offset);
         if ($offset < 0) {
-            /** @see Zend_Db_Adapter_Exception */
-            throw new Zend_Db_Adapter_Exception("LIMIT argument offset=$offset is not valid");
+            throw new AdapterException("LIMIT argument offset=$offset is not valid");
         }
 
         $sql = preg_replace(
@@ -359,9 +350,6 @@ class Zend_Db_Adapter_Pdo_Mssql extends Zend_Db_Adapter_Pdo_Abstract
                 $orderbyInverse = 'ORDER BY ' . implode(', ', $orderbyInverseParts);
             }
 
-
-
-
             $sql = 'SELECT * FROM (SELECT TOP ' . $count . ' * FROM (' . $sql . ') AS inner_tbl';
             if ($orderby !== false) {
                 $sql .= ' ' . $orderbyInverse . ' ';
@@ -391,7 +379,7 @@ class Zend_Db_Adapter_Pdo_Mssql extends Zend_Db_Adapter_Pdo_Abstract
      * @param string $tableName   OPTIONAL Name of table.
      * @param string $primaryKey  OPTIONAL Name of primary key column.
      * @return string
-     * @throws Zend_Db_Adapter_Exception
+     * @throws AdapterException
      */
     public function lastInsertId($tableName = null, $primaryKey = null)
     {
@@ -408,7 +396,7 @@ class Zend_Db_Adapter_Pdo_Mssql extends Zend_Db_Adapter_Pdo_Abstract
     {
         try {
             $stmt = $this->query("SELECT CAST(SERVERPROPERTY('productversion') AS VARCHAR)");
-            $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
+            $result = $stmt->fetchAll(Db::FETCH_NUM);
             if (count($result)) {
                 return $result[0][0];
             }

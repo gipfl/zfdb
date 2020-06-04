@@ -12,35 +12,23 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  *
  */
+namespace gipfl\ZfDb\Adapter;
+
+use gipfl\ZfDb\Adapter\Exception\AdapterExceptionDb2;
+use gipfl\ZfDb\Db;
+use gipfl\ZfDb\Statement\Db2Statement;
 
 /**
- * @see Zend_Db
- */
-
-/**
- * @see Zend_Db_Adapter_Abstract
- */
-
-/**
- * @see Zend_Db_Statement_Db2
- */
-
-
-/**
- * @package    Zend_Db
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
+class Db2 extends Adapter
 {
     /**
      * User-provided configuration.
@@ -83,7 +71,7 @@ class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
      *
      * @var string
      */
-    protected $_defaultStmtClass = 'Zend_Db_Statement_Db2';
+    protected $_defaultStmtClass = Db2Statement::class;
     protected $_isI5 = false;
 
     /**
@@ -98,14 +86,14 @@ class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-        Zend_Db::INT_TYPE    => Zend_Db::INT_TYPE,
-        Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
-        Zend_Db::FLOAT_TYPE  => Zend_Db::FLOAT_TYPE,
-        'INTEGER'            => Zend_Db::INT_TYPE,
-        'SMALLINT'           => Zend_Db::INT_TYPE,
-        'BIGINT'             => Zend_Db::BIGINT_TYPE,
-        'DECIMAL'            => Zend_Db::FLOAT_TYPE,
-        'NUMERIC'            => Zend_Db::FLOAT_TYPE
+        Db::INT_TYPE    => Db::INT_TYPE,
+        Db::BIGINT_TYPE => Db::BIGINT_TYPE,
+        Db::FLOAT_TYPE  => Db::FLOAT_TYPE,
+        'INTEGER'       => Db::INT_TYPE,
+        'SMALLINT'      => Db::INT_TYPE,
+        'BIGINT'        => Db::BIGINT_TYPE,
+        'DECIMAL'       => Db::FLOAT_TYPE,
+        'NUMERIC'       => Db::FLOAT_TYPE
     );
 
     /**
@@ -121,10 +109,7 @@ class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
         }
 
         if (!extension_loaded('ibm_db2')) {
-            /**
-             * @see Zend_Db_Adapter_Db2_Exception
-             */
-            throw new Zend_Db_Adapter_Db2_Exception('The IBM DB2 extension is required for this adapter but the extension is not loaded');
+            throw new AdapterExceptionDb2('The IBM DB2 extension is required for this adapter but the extension is not loaded');
         }
 
         $this->_determineI5();
@@ -141,13 +126,13 @@ class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
             $this->_config['driver_options']['autocommit'] = &$this->_execute_mode;
         }
 
-        if (isset($this->_config['options'][Zend_Db::CASE_FOLDING])) {
+        if (isset($this->_config['options'][Db::CASE_FOLDING])) {
             $caseAttrMap = array(
-                Zend_Db::CASE_NATURAL => DB2_CASE_NATURAL,
-                Zend_Db::CASE_UPPER   => DB2_CASE_UPPER,
-                Zend_Db::CASE_LOWER   => DB2_CASE_LOWER
+                Db::CASE_NATURAL => DB2_CASE_NATURAL,
+                Db::CASE_UPPER   => DB2_CASE_UPPER,
+                Db::CASE_LOWER   => DB2_CASE_LOWER
             );
-            $this->_config['driver_options']['DB2_ATTR_CASE'] = $caseAttrMap[$this->_config['options'][Zend_Db::CASE_FOLDING]];
+            $this->_config['driver_options']['DB2_ATTR_CASE'] = $caseAttrMap[$this->_config['options'][Db::CASE_FOLDING]];
         }
 
         if ($this->_isI5 && isset($this->_config['driver_options']['i5_naming'])) {
@@ -185,10 +170,7 @@ class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
 
         // check the connection
         if (!$this->_connection) {
-            /**
-             * @see Zend_Db_Adapter_Db2_Exception
-             */
-            throw new Zend_Db_Adapter_Db2_Exception(db2_conn_errormsg(), db2_conn_error());
+            throw new AdapterExceptionDb2(db2_conn_errormsg(), db2_conn_error());
         }
     }
 
@@ -220,7 +202,7 @@ class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
      * Returns an SQL statement for preparation.
      *
      * @param string $sql The SQL statement with placeholders.
-     * @return Zend_Db_Statement_Db2
+     * @return Db2Statement
      */
     public function prepare($sql)
     {
@@ -255,9 +237,9 @@ class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
                 break;
             default:
                 /**
-                 * @see Zend_Db_Adapter_Db2_Exception
+                 * @see AdapterExceptionDb2
                  */
-                throw new Zend_Db_Adapter_Db2_Exception("execution mode not supported");
+                throw new AdapterExceptionDb2("execution mode not supported");
                 break;
         }
     }
@@ -424,7 +406,7 @@ class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
         /**
          * To avoid case issues, fetch using FETCH_NUM
          */
-        $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
+        $result = $stmt->fetchAll(Db::FETCH_NUM);
 
         /**
          * The ordering of columns is defined by the query so we can map
@@ -579,9 +561,9 @@ class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
     {
         if (!db2_commit($this->_connection)) {
             /**
-             * @see Zend_Db_Adapter_Db2_Exception
+             * @see AdapterExceptionDb2
              */
-            throw new Zend_Db_Adapter_Db2_Exception(
+            throw new AdapterExceptionDb2(
                 db2_conn_errormsg($this->_connection),
                 db2_conn_error($this->_connection));
         }
@@ -598,9 +580,9 @@ class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
     {
         if (!db2_rollback($this->_connection)) {
             /**
-             * @see Zend_Db_Adapter_Db2_Exception
+             * @see AdapterExceptionDb2
              */
-            throw new Zend_Db_Adapter_Db2_Exception(
+            throw new AdapterExceptionDb2(
                 db2_conn_errormsg($this->_connection),
                 db2_conn_error($this->_connection));
         }
@@ -612,29 +594,21 @@ class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
      *
      * @param integer $mode
      * @return void
-     * @throws Zend_Db_Adapter_Db2_Exception
+     * @throws AdapterExceptionDb2
      */
     public function setFetchMode($mode)
     {
         switch ($mode) {
-            case Zend_Db::FETCH_NUM:   // seq array
-            case Zend_Db::FETCH_ASSOC: // assoc array
-            case Zend_Db::FETCH_BOTH:  // seq+assoc array
-            case Zend_Db::FETCH_OBJ:   // object
+            case Db::FETCH_NUM:   // seq array
+            case Db::FETCH_ASSOC: // assoc array
+            case Db::FETCH_BOTH:  // seq+assoc array
+            case Db::FETCH_OBJ:   // object
                 $this->_fetchMode = $mode;
                 break;
-            case Zend_Db::FETCH_BOUND:   // bound to PHP variable
-                /**
-                 * @see Zend_Db_Adapter_Db2_Exception
-                 */
-                throw new Zend_Db_Adapter_Db2_Exception('FETCH_BOUND is not supported yet');
-                break;
+            case Db::FETCH_BOUND:   // bound to PHP variable
+                throw new AdapterExceptionDb2('FETCH_BOUND is not supported yet');
             default:
-                /**
-                 * @see Zend_Db_Adapter_Db2_Exception
-                 */
-                throw new Zend_Db_Adapter_Db2_Exception("Invalid fetch mode '$mode' specified");
-                break;
+                throw new AdapterExceptionDb2("Invalid fetch mode '$mode' specified");
         }
     }
 
@@ -650,18 +624,12 @@ class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
     {
         $count = intval($count);
         if ($count <= 0) {
-            /**
-             * @see Zend_Db_Adapter_Db2_Exception
-             */
-            throw new Zend_Db_Adapter_Db2_Exception("LIMIT argument count=$count is not valid");
+            throw new AdapterExceptionDb2("LIMIT argument count=$count is not valid");
         }
 
         $offset = intval($offset);
         if ($offset < 0) {
-            /**
-             * @see Zend_Db_Adapter_Db2_Exception
-             */
-            throw new Zend_Db_Adapter_Db2_Exception("LIMIT argument offset=$offset is not valid");
+            throw new AdapterExceptionDb2("LIMIT argument offset=$offset is not valid");
         }
 
         if ($offset == 0) {
@@ -783,7 +751,7 @@ class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
             while ($schema = db2_fetch_assoc($schemaStatement)) {
                 if ($schema['TABLE_SCHEM'] !== null) {
                     // list of the tables which belongs to the selected library
-                    $tablesStatement = db2_tables($this->_connection, NULL, $schema['TABLE_SCHEM']);
+                    $tablesStatement = db2_tables($this->_connection, null, $schema['TABLE_SCHEM']);
                     if (is_resource($tablesStatement)) {
                         while ($rowTables = db2_fetch_assoc($tablesStatement) ) {
                             if ($rowTables['TABLE_NAME'] !== null) {
@@ -818,7 +786,4 @@ class Zend_Db_Adapter_Db2 extends Zend_Db_Adapter_Abstract
         $tableName = $objectName;
         return $this->fetchOne('SELECT IDENTITY_VAL_LOCAL() from ' . $this->quoteIdentifier($tableName));
     }
-
 }
-
-

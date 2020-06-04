@@ -12,30 +12,22 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb\Adapter\Pdo;
 
-
-/**
- * @see Zend_Db_Adapter_Pdo_Abstract
- */
-
+use gipfl\ZfDb\Adapter\Exception\AdapterException;
+use gipfl\ZfDb\Db;
 
 /**
  * Class for connecting to PostgreSQL databases and performing common operations.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Adapter_Pdo_Pgsql extends Zend_Db_Adapter_Pdo_Abstract
+class Pgsql extends PdoAdapter
 {
 
     /**
@@ -57,25 +49,25 @@ class Zend_Db_Adapter_Pdo_Pgsql extends Zend_Db_Adapter_Pdo_Abstract
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-        Zend_Db::INT_TYPE    => Zend_Db::INT_TYPE,
-        Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
-        Zend_Db::FLOAT_TYPE  => Zend_Db::FLOAT_TYPE,
-        'INTEGER'            => Zend_Db::INT_TYPE,
-        'SERIAL'             => Zend_Db::INT_TYPE,
-        'SMALLINT'           => Zend_Db::INT_TYPE,
-        'BIGINT'             => Zend_Db::BIGINT_TYPE,
-        'BIGSERIAL'          => Zend_Db::BIGINT_TYPE,
-        'DECIMAL'            => Zend_Db::FLOAT_TYPE,
-        'DOUBLE PRECISION'   => Zend_Db::FLOAT_TYPE,
-        'NUMERIC'            => Zend_Db::FLOAT_TYPE,
-        'REAL'               => Zend_Db::FLOAT_TYPE
+        Db::INT_TYPE       => Db::INT_TYPE,
+        Db::BIGINT_TYPE    => Db::BIGINT_TYPE,
+        Db::FLOAT_TYPE     => Db::FLOAT_TYPE,
+        'INTEGER'          => Db::INT_TYPE,
+        'SERIAL'           => Db::INT_TYPE,
+        'SMALLINT'         => Db::INT_TYPE,
+        'BIGINT'           => Db::BIGINT_TYPE,
+        'BIGSERIAL'        => Db::BIGINT_TYPE,
+        'DECIMAL'          => Db::FLOAT_TYPE,
+        'DOUBLE PRECISION' => Db::FLOAT_TYPE,
+        'NUMERIC'          => Db::FLOAT_TYPE,
+        'REAL'             => Db::FLOAT_TYPE
     );
 
     /**
      * Creates a PDO object and connects to the database.
      *
      * @return void
-     * @throws Zend_Db_Adapter_Exception
+     * @throws AdapterException
      */
     protected function _connect()
     {
@@ -176,7 +168,7 @@ class Zend_Db_Adapter_Pdo_Pgsql extends Zend_Db_Adapter_Pdo_Abstract
         $stmt = $this->query($sql);
 
         // Use FETCH_NUM so we are not dependent on the CASE attribute of the PDO connection
-        $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
+        $result = $stmt->fetchAll(Db::FETCH_NUM);
 
         $attnum        = 0;
         $nspname       = 1;
@@ -245,18 +237,12 @@ class Zend_Db_Adapter_Pdo_Pgsql extends Zend_Db_Adapter_Pdo_Abstract
     {
         $count = intval($count);
         if ($count <= 0) {
-            /**
-             * @see Zend_Db_Adapter_Exception
-             */
-            throw new Zend_Db_Adapter_Exception("LIMIT argument count=$count is not valid");
+            throw new AdapterException("LIMIT argument count=$count is not valid");
         }
 
         $offset = intval($offset);
         if ($offset < 0) {
-            /**
-             * @see Zend_Db_Adapter_Exception
-             */
-            throw new Zend_Db_Adapter_Exception("LIMIT argument offset=$offset is not valid");
+            throw new AdapterException("LIMIT argument offset=$offset is not valid");
         }
 
         $sql .= " LIMIT $count";
@@ -329,5 +315,4 @@ class Zend_Db_Adapter_Pdo_Pgsql extends Zend_Db_Adapter_Pdo_Abstract
         }
         return $this->_connection->lastInsertId($tableName);
     }
-
 }

@@ -12,31 +12,24 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb\Adapter\Pdo\Ibm;
 
-
-/** @see Zend_Db_Adapter_Pdo_Ibm */
-
-/** @see Zend_Db_Statement_Pdo_Ibm */
-
+use gipfl\ZfDb\Adapter\Adapter;
+use gipfl\ZfDb\Adapter\Exception\AdapterException;
+use gipfl\ZfDb\Db;
 
 /**
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Adapter_Pdo_Ibm_Db2
+class Db2
 {
     /**
-     * @var Zend_Db_Adapter_Abstract
+     * @var Adapter
      */
     protected $_adapter = null;
 
@@ -46,7 +39,7 @@ class Zend_Db_Adapter_Pdo_Ibm_Db2
      * It will be used to generate non-generic SQL
      * for a particular data server
      *
-     * @param Zend_Db_Adapter_Abstract $adapter
+     * @param Adapter $adapter
      */
     public function __construct($adapter)
     {
@@ -98,7 +91,7 @@ class Zend_Db_Adapter_Pdo_Ibm_Db2
         /**
          * To avoid case issues, fetch using FETCH_NUM
          */
-        $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
+        $result = $stmt->fetchAll(Db::FETCH_NUM);
 
         /**
          * The ordering of columns is defined by the query so we can map
@@ -158,20 +151,18 @@ class Zend_Db_Adapter_Pdo_Ibm_Db2
      * @param string $sql
      * @param integer $count
      * @param integer $offset OPTIONAL
-     * @throws Zend_Db_Adapter_Exception
+     * @throws AdapterException
      * @return string
      */
     public function limit($sql, $count, $offset = 0)
     {
         $count = intval($count);
         if ($count < 0) {
-            /** @see Zend_Db_Adapter_Exception */
-            throw new Zend_Db_Adapter_Exception("LIMIT argument count=$count is not valid");
+            throw new AdapterException("LIMIT argument count=$count is not valid");
         } else {
             $offset = intval($offset);
             if ($offset < 0) {
-                /** @see Zend_Db_Adapter_Exception */
-                throw new Zend_Db_Adapter_Exception("LIMIT argument offset=$offset is not valid");
+                throw new AdapterException("LIMIT argument offset=$offset is not valid");
             }
 
             if ($offset == 0 && $count > 0) {

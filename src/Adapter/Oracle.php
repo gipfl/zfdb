@@ -12,30 +12,22 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb\Adapter;
+
+use gipfl\ZfDb\Adapter\Exception\AdapterExceptionOracle;
+use gipfl\ZfDb\Db;
+use gipfl\ZfDb\Expr;
+use gipfl\ZfDb\Statement\OracleStatement;
 
 /**
- * @see Zend_Db_Adapter_Abstract
- */
-
-/**
- * @see Zend_Db_Statement_Oracle
- */
-
-/**
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
+class Oracle extends Adapter
 {
     /**
      * User-provided configuration.
@@ -68,12 +60,12 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-        Zend_Db::INT_TYPE    => Zend_Db::INT_TYPE,
-        Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
-        Zend_Db::FLOAT_TYPE  => Zend_Db::FLOAT_TYPE,
-        'BINARY_DOUBLE'      => Zend_Db::FLOAT_TYPE,
-        'BINARY_FLOAT'       => Zend_Db::FLOAT_TYPE,
-        'NUMBER'             => Zend_Db::FLOAT_TYPE,
+        Db::INT_TYPE    => Db::INT_TYPE,
+        Db::BIGINT_TYPE => Db::BIGINT_TYPE,
+        Db::FLOAT_TYPE  => Db::FLOAT_TYPE,
+        'BINARY_DOUBLE' => Db::FLOAT_TYPE,
+        'BINARY_FLOAT'  => Db::FLOAT_TYPE,
+        'NUMBER'        => Db::FLOAT_TYPE,
     );
 
     /**
@@ -86,7 +78,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
      *
      * @var string
      */
-    protected $_defaultStmtClass = 'Zend_Db_Statement_Oracle';
+    protected $_defaultStmtClass = OracleStatement::class;
 
     /**
      * Check if LOB field are returned as string
@@ -100,7 +92,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
      * Creates a connection resource.
      *
      * @return void
-     * @throws Zend_Db_Adapter_Oracle_Exception
+     * @throws AdapterExceptionOracle
      */
     protected function _connect()
     {
@@ -110,10 +102,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
         }
 
         if (!extension_loaded('oci8')) {
-            /**
-             * @see Zend_Db_Adapter_Oracle_Exception
-             */
-            throw new Zend_Db_Adapter_Oracle_Exception('The OCI8 extension is required for this adapter but the extension is not loaded');
+            throw new AdapterExceptionOracle('The OCI8 extension is required for this adapter but the extension is not loaded');
         }
 
         $this->_setExecuteMode(OCI_COMMIT_ON_SUCCESS);
@@ -128,10 +117,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
 
         // check the connection
         if (!$this->_connection) {
-            /**
-             * @see Zend_Db_Adapter_Oracle_Exception
-             */
-            throw new Zend_Db_Adapter_Oracle_Exception(oci_error());
+            throw new AdapterExceptionOracle(oci_error());
         }
     }
 
@@ -163,8 +149,8 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
     /**
      * Activate/deactivate return of LOB as string
      *
-     * @param string $lob_as_string
-     * @return Zend_Db_Adapter_Oracle
+     * @param string $lobAsString
+     * @return Oracle
      */
     public function setLobAsString($lobAsString)
     {
@@ -195,14 +181,14 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
      * Returns an SQL statement for preparation.
      *
      * @param string $sql The SQL statement with placeholders.
-     * @return Zend_Db_Statement_Oracle
+     * @return OracleStatement
      */
     public function prepare($sql)
     {
         $this->_connect();
         $stmtClass = $this->_defaultStmtClass;
         $stmt = new $stmtClass($this, $sql);
-        if ($stmt instanceof Zend_Db_Statement_Oracle) {
+        if ($stmt instanceof OracleStatement) {
             $stmt->setLobAsString($this->getLobAsString());
         }
         $stmt->setFetchMode($this->_fetchMode);
@@ -227,7 +213,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
     /**
      * Quote a table identifier and alias.
      *
-     * @param string|array|Zend_Db_Expr $ident The identifier or expression.
+     * @param string|array|Expr $ident The identifier or expression.
      * @param string $alias An alias for the table.
      * @param boolean $auto If true, heed the AUTO_QUOTE_IDENTIFIERS config option.
      * @return string The quoted identifier and alias.
@@ -392,7 +378,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
         /**
          * Use FETCH_NUM so we are not dependent on the CASE attribute of the PDO connection
          */
-        $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
+        $result = $stmt->fetchAll(Db::FETCH_NUM);
 
         $table_name      = 0;
         $owner           = 1;
@@ -452,15 +438,12 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
      * Commit a transaction and return to autocommit mode.
      *
      * @return void
-     * @throws Zend_Db_Adapter_Oracle_Exception
+     * @throws AdapterExceptionOracle
      */
     protected function _commit()
     {
         if (!oci_commit($this->_connection)) {
-            /**
-             * @see Zend_Db_Adapter_Oracle_Exception
-             */
-            throw new Zend_Db_Adapter_Oracle_Exception(oci_error($this->_connection));
+            throw new AdapterExceptionOracle(oci_error($this->_connection));
         }
         $this->_setExecuteMode(OCI_COMMIT_ON_SUCCESS);
     }
@@ -469,15 +452,12 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
      * Roll back a transaction and return to autocommit mode.
      *
      * @return void
-     * @throws Zend_Db_Adapter_Oracle_Exception
+     * @throws AdapterExceptionOracle
      */
     protected function _rollBack()
     {
         if (!oci_rollback($this->_connection)) {
-            /**
-             * @see Zend_Db_Adapter_Oracle_Exception
-             */
-            throw new Zend_Db_Adapter_Oracle_Exception(oci_error($this->_connection));
+            throw new AdapterExceptionOracle(oci_error($this->_connection));
         }
         $this->_setExecuteMode(OCI_COMMIT_ON_SUCCESS);
     }
@@ -485,33 +465,25 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
     /**
      * Set the fetch mode.
      *
-     * @todo Support FETCH_CLASS and FETCH_INTO.
-     *
      * @param integer $mode A fetch mode.
      * @return void
-     * @throws Zend_Db_Adapter_Oracle_Exception
+     * @throws AdapterExceptionOracle
+     *@todo Support FETCH_CLASS and FETCH_INTO.
+     *
      */
     public function setFetchMode($mode)
     {
         switch ($mode) {
-            case Zend_Db::FETCH_NUM:   // seq array
-            case Zend_Db::FETCH_ASSOC: // assoc array
-            case Zend_Db::FETCH_BOTH:  // seq+assoc array
-            case Zend_Db::FETCH_OBJ:   // object
+            case Db::FETCH_NUM:   // seq array
+            case Db::FETCH_ASSOC: // assoc array
+            case Db::FETCH_BOTH:  // seq+assoc array
+            case Db::FETCH_OBJ:   // object
                 $this->_fetchMode = $mode;
                 break;
-            case Zend_Db::FETCH_BOUND: // bound to PHP variable
-                /**
-                 * @see Zend_Db_Adapter_Oracle_Exception
-                 */
-                throw new Zend_Db_Adapter_Oracle_Exception('FETCH_BOUND is not supported yet');
-                break;
+            case Db::FETCH_BOUND: // bound to PHP variable
+                throw new AdapterExceptionOracle('FETCH_BOUND is not supported yet');
             default:
-                /**
-                 * @see Zend_Db_Adapter_Oracle_Exception
-                 */
-                throw new Zend_Db_Adapter_Oracle_Exception("Invalid fetch mode '$mode' specified");
-                break;
+                throw new AdapterExceptionOracle("Invalid fetch mode '$mode' specified");
         }
     }
 
@@ -522,24 +494,18 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
      * @param integer $count
      * @param integer $offset OPTIONAL
      * @return string
-     * @throws Zend_Db_Adapter_Oracle_Exception
+     * @throws AdapterExceptionOracle
      */
     public function limit($sql, $count, $offset = 0)
     {
         $count = intval($count);
         if ($count <= 0) {
-            /**
-             * @see Zend_Db_Adapter_Oracle_Exception
-             */
-            throw new Zend_Db_Adapter_Oracle_Exception("LIMIT argument count=$count is not valid");
+            throw new AdapterExceptionOracle("LIMIT argument count=$count is not valid");
         }
 
         $offset = intval($offset);
         if ($offset < 0) {
-            /**
-             * @see Zend_Db_Adapter_Oracle_Exception
-             */
-            throw new Zend_Db_Adapter_Oracle_Exception("LIMIT argument offset=$offset is not valid");
+            throw new AdapterExceptionOracle("LIMIT argument offset=$offset is not valid");
         }
 
         /**
@@ -561,7 +527,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
 
     /**
      * @param integer $mode
-     * @throws Zend_Db_Adapter_Oracle_Exception
+     * @throws AdapterExceptionOracle
      */
     private function _setExecuteMode($mode)
     {
@@ -572,11 +538,7 @@ class Zend_Db_Adapter_Oracle extends Zend_Db_Adapter_Abstract
                 $this->_execute_mode = $mode;
                 break;
             default:
-                /**
-                 * @see Zend_Db_Adapter_Oracle_Exception
-                 */
-                throw new Zend_Db_Adapter_Oracle_Exception("Invalid execution mode '$mode' specified");
-                break;
+                throw new AdapterExceptionOracle("Invalid execution mode '$mode' specified");
         }
     }
 

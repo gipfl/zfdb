@@ -12,29 +12,24 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Statement
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb\Statement;
 
-/**
- * @see Zend_Db_Statement
- */
+use gipfl\ZfDb\Db;
+use gipfl\ZfDb\Statement;
+use gipfl\ZfDb\Statement\Exception\StatementExceptionDb2;
 
 /**
  * Extends for DB2 native adapter.
  *
- * @package    Zend_Db
- * @subpackage Statement
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Statement_Db2 extends Zend_Db_Statement
+class Db2Statement extends Statement
 {
-
     /**
      * Column names.
      */
@@ -50,7 +45,7 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
      *
      * @param string $sql
      * @return void
-     * @throws Zend_Db_Statement_Db2_Exception
+     * @throws StatementExceptionDb2
      */
     public function _prepare($sql)
     {
@@ -61,10 +56,7 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
         $this->_stmt = @db2_prepare($connection, $sql);
 
         if (!$this->_stmt) {
-            /**
-             * @see Zend_Db_Statement_Db2_Exception
-             */
-            throw new Zend_Db_Statement_Db2_Exception(
+            throw new StatementExceptionDb2(
                 db2_stmt_errormsg(),
                 db2_stmt_error()
             );
@@ -80,7 +72,7 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
      * @param mixed $length    OPTIONAL Length of SQL parameter.
      * @param mixed $options   OPTIONAL Other options.
      * @return bool
-     * @throws Zend_Db_Statement_Db2_Exception
+     * @throws StatementExceptionDb2
      */
     public function _bindParam($parameter, &$variable, $type = null, $length = null, $options = null)
     {
@@ -95,10 +87,7 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
         }
 
         if (!db2_bind_param($this->_stmt, $parameter, "variable", $type, $datatype)) {
-            /**
-             * @see Zend_Db_Statement_Db2_Exception
-             */
-            throw new Zend_Db_Statement_Db2_Exception(
+            throw new StatementExceptionDb2(
                 db2_stmt_errormsg(),
                 db2_stmt_error()
             );
@@ -161,12 +150,12 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
      * Retrieves an array of error information, if any, associated with the
      * last operation on the statement handle.
      *
-     * @return array
+     * @return array|false
      */
     public function errorInfo()
     {
         $error = $this->errorCode();
-        if ($error === false){
+        if ($error === false) {
             return false;
         }
 
@@ -186,7 +175,7 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
      *
      * @param array $params OPTIONAL Values to bind to parameter placeholders.
      * @return bool
-     * @throws Zend_Db_Statement_Db2_Exception
+     * @throws StatementExceptionDb2
      */
     public function _execute(array $params = null)
     {
@@ -202,12 +191,10 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
         }
 
         if ($retval === false) {
-            /**
-             * @see Zend_Db_Statement_Db2_Exception
-             */
-            throw new Zend_Db_Statement_Db2_Exception(
+            throw new StatementExceptionDb2(
                 db2_stmt_errormsg(),
-                db2_stmt_error());
+                db2_stmt_error()
+            );
         }
 
         $this->_keys = array();
@@ -233,7 +220,7 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
      * @param int $cursor OPTIONAL Absolute, relative, or other.
      * @param int $offset OPTIONAL Number for absolute or relative cursors.
      * @return mixed Array, object, or scalar depending on fetch mode.
-     * @throws Zend_Db_Statement_Db2_Exception
+     * @throws StatementExceptionDb2
      */
     public function fetch($style = null, $cursor = null, $offset = null)
     {
@@ -246,30 +233,26 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
         }
 
         switch ($style) {
-            case Zend_Db::FETCH_NUM :
+            case Db::FETCH_NUM:
                 $row = db2_fetch_array($this->_stmt);
                 break;
-            case Zend_Db::FETCH_ASSOC :
+            case Db::FETCH_ASSOC:
                 $row = db2_fetch_assoc($this->_stmt);
                 break;
-            case Zend_Db::FETCH_BOTH :
+            case Db::FETCH_BOTH:
                 $row = db2_fetch_both($this->_stmt);
                 break;
-            case Zend_Db::FETCH_OBJ :
+            case Db::FETCH_OBJ:
                 $row = db2_fetch_object($this->_stmt);
                 break;
-            case Zend_Db::FETCH_BOUND:
+            case Db::FETCH_BOUND:
                 $row = db2_fetch_both($this->_stmt);
                 if ($row !== false) {
                     return $this->_fetchBound($row);
                 }
                 break;
             default:
-                /**
-                 * @see Zend_Db_Statement_Db2_Exception
-                 */
-                throw new Zend_Db_Statement_Db2_Exception("Invalid fetch mode '$style' specified");
-                break;
+                throw new StatementExceptionDb2("Invalid fetch mode '$style' specified");
         }
 
         return $row;
@@ -284,7 +267,7 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
      */
     public function fetchObject($class = 'stdClass', array $config = array())
     {
-        $obj = $this->fetch(Zend_Db::FETCH_OBJ);
+        $obj = $this->fetch(Db::FETCH_OBJ);
         return $obj;
     }
 
@@ -294,14 +277,11 @@ class Zend_Db_Statement_Db2 extends Zend_Db_Statement
      * the results of multiple queries.
      *
      * @return bool
-     * @throws Zend_Db_Statement_Db2_Exception
+     * @throws StatementExceptionDb2
      */
     public function nextRowset()
     {
-        /**
-         * @see Zend_Db_Statement_Db2_Exception
-         */
-        throw new Zend_Db_Statement_Db2_Exception(__FUNCTION__ . '() is not implemented');
+        throw new StatementExceptionDb2(__FUNCTION__ . '() is not implemented');
     }
 
     /**

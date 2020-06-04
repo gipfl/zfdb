@@ -12,23 +12,31 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb\Adapter\Exception;
+
+use Exception;
 
 /**
- * Zend_Exception
+ * Zend_Db_Adapter_Exception
  */
 
 /**
- * @category   Zend
- * @package    Zend_Db
+ * Zend_Db_Adapter_Db2_Exception
+ *
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Exception extends Exception
+class AdapterExceptionDb2 extends AdapterException
 {
+   protected $code = '00000';
+   protected $message = 'unknown exception';
+
+   function __construct($message = 'unknown exception', $code = '00000', Exception $e = null)
+   {
+       parent::__construct($message, $code, $e);
+   }
 }

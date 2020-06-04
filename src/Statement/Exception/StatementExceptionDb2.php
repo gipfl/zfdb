@@ -12,27 +12,39 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Select
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb\Statement\Exception;
+
+use gipfl\ZfDb\Statement\Exception\StatementException;
 
 /**
- * Zend_Db_Exception
- */
-
-/**
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Select
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-class Zend_Db_Select_Exception extends Zend_Db_Exception
+class StatementExceptionDb2 extends StatementException
 {
-}
+    /**
+     * @var string
+     */
+    protected $code = '00000';
 
+    /**
+     * @var string
+     */
+    protected $message = 'unknown exception';
+
+    /**
+     * @param string $msg
+     * @param string $state
+     */
+    public function __construct($msg = 'unknown exception', $state = '00000')
+    {
+        $this->message = $msg;
+        $this->code = $state;
+        parent::__construct($this->message, $this->code);
+    }
+}

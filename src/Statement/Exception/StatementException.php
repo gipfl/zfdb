@@ -12,28 +12,37 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
- *
  */
+namespace gipfl\ZfDb\Statement\Exception;
+
+use gipfl\ZfDb\Exception\DbException;
 
 /**
- * Zend
- */
-
-/**
- * Zend_Db_Adapter_Mysqli_Exception
+ * Zend_Db_Statement_Exception
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Adapter_Mysqli_Exception extends Zend_Db_Adapter_Exception
+class StatementException extends DbException
 {
+    /**
+     * Check if this general exception has a specific database driver specific exception nested inside.
+     *
+     * @return bool
+     */
+    public function hasChainedException()
+    {
+        return ($this->getPrevious() !== null);
+    }
+
+    /**
+     * @return \Exception|null
+     */
+    public function getChainedException()
+    {
+        return $this->getPrevious();
+    }
 }

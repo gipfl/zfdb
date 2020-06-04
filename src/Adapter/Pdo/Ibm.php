@@ -12,32 +12,25 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb\Adapter\Pdo;
 
-
-/** @see Zend_Db_Adapter_Pdo_Abstract */
-
-/** @see Zend_Db_Abstract_Pdo_Ibm_Db2 */
-
-/** @see Zend_Db_Abstract_Pdo_Ibm_Ids */
-
-/** @see Zend_Db_Statement_Pdo_Ibm */
-
+use gipfl\ZfDb\Adapter\Exception\AdapterException;
+use gipfl\ZfDb\Adapter\Pdo\Ibm\Db2;
+use gipfl\ZfDb\Adapter\Pdo\Ibm\Ids;
+use gipfl\ZfDb\Db;
+use PDO;
+use PDOException;
+use PDOStatement;
 
 /**
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Adapter_Pdo_Ibm extends Zend_Db_Adapter_Pdo_Abstract
+class Ibm extends PdoAdapter
 {
     /**
      * PDO type.
@@ -49,7 +42,7 @@ class Zend_Db_Adapter_Pdo_Ibm extends Zend_Db_Adapter_Pdo_Abstract
     /**
      * The IBM data server connected to
      *
-     * @var string
+     * @var Db2|Ids
      */
     protected $_serverType = null;
 
@@ -65,19 +58,19 @@ class Zend_Db_Adapter_Pdo_Ibm extends Zend_Db_Adapter_Pdo_Abstract
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-                        Zend_Db::INT_TYPE    => Zend_Db::INT_TYPE,
-                        Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
-                        Zend_Db::FLOAT_TYPE  => Zend_Db::FLOAT_TYPE,
-                        'INTEGER'            => Zend_Db::INT_TYPE,
-                        'SMALLINT'           => Zend_Db::INT_TYPE,
-                        'BIGINT'             => Zend_Db::BIGINT_TYPE,
-                        'DECIMAL'            => Zend_Db::FLOAT_TYPE,
-                        'DEC'                => Zend_Db::FLOAT_TYPE,
-                        'REAL'               => Zend_Db::FLOAT_TYPE,
-                        'NUMERIC'            => Zend_Db::FLOAT_TYPE,
-                        'DOUBLE PRECISION'   => Zend_Db::FLOAT_TYPE,
-                        'FLOAT'              => Zend_Db::FLOAT_TYPE
-                        );
+        Db::INT_TYPE       => Db::INT_TYPE,
+        Db::BIGINT_TYPE    => Db::BIGINT_TYPE,
+        Db::FLOAT_TYPE     => Db::FLOAT_TYPE,
+        'INTEGER'          => Db::INT_TYPE,
+        'SMALLINT'         => Db::INT_TYPE,
+        'BIGINT'           => Db::BIGINT_TYPE,
+        'DECIMAL'          => Db::FLOAT_TYPE,
+        'DEC'              => Db::FLOAT_TYPE,
+        'REAL'             => Db::FLOAT_TYPE,
+        'NUMERIC'          => Db::FLOAT_TYPE,
+        'DOUBLE PRECISION' => Db::FLOAT_TYPE,
+        'FLOAT'            => Db::FLOAT_TYPE
+    );
 
     /**
      * Creates a PDO object and connects to the database.
@@ -87,7 +80,7 @@ class Zend_Db_Adapter_Pdo_Ibm extends Zend_Db_Adapter_Pdo_Abstract
      * @todo also differentiate between z/OS and i/5
      *
      * @return void
-     * @throws Zend_Db_Adapter_Exception
+     * @throws AdapterException
      */
     public function _connect()
     {
@@ -96,7 +89,7 @@ class Zend_Db_Adapter_Pdo_Ibm extends Zend_Db_Adapter_Pdo_Abstract
         }
         parent::_connect();
 
-        $this->getConnection()->setAttribute(Zend_Db::ATTR_STRINGIFY_FETCHES, true);
+        $this->getConnection()->setAttribute(Db::ATTR_STRINGIFY_FETCHES, true);
 
         try {
             if ($this->_serverType === null) {
@@ -104,34 +97,38 @@ class Zend_Db_Adapter_Pdo_Ibm extends Zend_Db_Adapter_Pdo_Abstract
 
                 switch ($server) {
                     case 'DB2':
-                        $this->_serverType = new Zend_Db_Adapter_Pdo_Ibm_Db2($this);
+                        $this->_serverType = new Db2($this);
 
                         // Add DB2-specific numeric types
-                        $this->_numericDataTypes['DECFLOAT'] = Zend_Db::FLOAT_TYPE;
-                        $this->_numericDataTypes['DOUBLE']   = Zend_Db::FLOAT_TYPE;
-                        $this->_numericDataTypes['NUM']      = Zend_Db::FLOAT_TYPE;
+                        $this->_numericDataTypes['DECFLOAT'] = Db::FLOAT_TYPE;
+                        $this->_numericDataTypes['DOUBLE']   = Db::FLOAT_TYPE;
+                        $this->_numericDataTypes['NUM']      = Db::FLOAT_TYPE;
 
                         break;
                     case 'IDS':
-                        $this->_serverType = new Zend_Db_Adapter_Pdo_Ibm_Ids($this);
+                        $this->_serverType = new Ids($this);
 
                         // Add IDS-specific numeric types
-                        $this->_numericDataTypes['SERIAL']       = Zend_Db::INT_TYPE;
-                        $this->_numericDataTypes['SERIAL8']      = Zend_Db::BIGINT_TYPE;
-                        $this->_numericDataTypes['INT8']         = Zend_Db::BIGINT_TYPE;
-                        $this->_numericDataTypes['SMALLFLOAT']   = Zend_Db::FLOAT_TYPE;
-                        $this->_numericDataTypes['MONEY']        = Zend_Db::FLOAT_TYPE;
+                        $this->_numericDataTypes['SERIAL']     = Db::INT_TYPE;
+                        $this->_numericDataTypes['SERIAL8']    = Db::BIGINT_TYPE;
+                        $this->_numericDataTypes['INT8']       = Db::BIGINT_TYPE;
+                        $this->_numericDataTypes['SMALLFLOAT'] = Db::FLOAT_TYPE;
+                        $this->_numericDataTypes['MONEY']      = Db::FLOAT_TYPE;
 
                         break;
-                    }
+                }
             }
         } catch (PDOException $e) {
-            /** @see Zend_Db_Adapter_Exception */
+            /** @see AdapterException */
             $error = strpos($e->getMessage(), 'driver does not support that attribute');
             if ($error) {
-                throw new Zend_Db_Adapter_Exception("PDO_IBM driver extension is downlevel.  Please use driver release version 1.2.1 or later", 0, $e);
+                throw new AdapterException(
+                    "PDO_IBM driver extension is downlevel.  Please use driver release version 1.2.1 or later",
+                    0,
+                    $e
+                );
             } else {
-                throw new Zend_Db_Adapter_Exception($e->getMessage(), $e->getCode(), $e);
+                throw new AdapterException($e->getMessage(), $e->getCode(), $e);
             }
         }
     }
@@ -163,7 +160,7 @@ class Zend_Db_Adapter_Pdo_Ibm extends Zend_Db_Adapter_Pdo_Abstract
      * Checks required options
      *
      * @param  array $config
-     * @throws Zend_Db_Adapter_Exception
+     * @throws AdapterException
      * @return void
      */
     protected function _checkRequiredOptions(array $config)
@@ -172,8 +169,7 @@ class Zend_Db_Adapter_Pdo_Ibm extends Zend_Db_Adapter_Pdo_Abstract
 
         if (array_key_exists('host', $this->_config) &&
         !array_key_exists('port', $config)) {
-            /** @see Zend_Db_Adapter_Exception */
-            throw new Zend_Db_Adapter_Exception("Configuration must have a key for 'port' when 'host' is specified");
+            throw new AdapterException("Configuration must have a key for 'port' when 'host' is specified");
         }
     }
 
@@ -337,7 +333,7 @@ class Zend_Db_Adapter_Pdo_Ibm extends Zend_Db_Adapter_Pdo_Abstract
     {
         try {
             $stmt = $this->query('SELECT service_level, fixpack_num FROM TABLE (sysproc.env_get_inst_info()) as INSTANCEINFO');
-            $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
+            $result = $stmt->fetchAll(Db::FETCH_NUM);
             if (count($result)) {
                 $matches = null;
                 if (preg_match('/((?:[0-9]{1,2}\.){1,3}[0-9]{1,2})/', $result[0][0], $matches)) {

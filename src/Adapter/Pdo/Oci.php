@@ -12,32 +12,25 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb\Adapter\Pdo;
 
-
-/**
- * @see Zend_Db_Adapter_Pdo_Abstract
- */
-
+use gipfl\ZfDb\Adapter\Exception\AdapterException;
+use gipfl\ZfDb\Adapter\Exception\AdapterExceptionOracle;
+use gipfl\ZfDb\Db;
+use gipfl\ZfDb\Expr;
 
 /**
  * Class for connecting to Oracle databases and performing common operations.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Adapter_Pdo_Oci extends Zend_Db_Adapter_Pdo_Abstract
+class Oci extends PdoAdapter
 {
-
     /**
      * PDO type.
      *
@@ -64,12 +57,12 @@ class Zend_Db_Adapter_Pdo_Oci extends Zend_Db_Adapter_Pdo_Abstract
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-        Zend_Db::INT_TYPE    => Zend_Db::INT_TYPE,
-        Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
-        Zend_Db::FLOAT_TYPE  => Zend_Db::FLOAT_TYPE,
-        'BINARY_DOUBLE'      => Zend_Db::FLOAT_TYPE,
-        'BINARY_FLOAT'       => Zend_Db::FLOAT_TYPE,
-        'NUMBER'             => Zend_Db::FLOAT_TYPE
+        Db::INT_TYPE    => Db::INT_TYPE,
+        Db::BIGINT_TYPE => Db::BIGINT_TYPE,
+        Db::FLOAT_TYPE  => Db::FLOAT_TYPE,
+        'BINARY_DOUBLE' => Db::FLOAT_TYPE,
+        'BINARY_FLOAT'  => Db::FLOAT_TYPE,
+        'NUMBER'        => Db::FLOAT_TYPE
     );
 
     /**
@@ -125,7 +118,7 @@ class Zend_Db_Adapter_Pdo_Oci extends Zend_Db_Adapter_Pdo_Abstract
     /**
      * Quote a table identifier and alias.
      *
-     * @param string|array|Zend_Db_Expr $ident The identifier or expression.
+     * @param string|array|Expr $ident The identifier or expression.
      * @param string $alias An alias for the table.
      * @return string The quoted identifier and alias.
      */
@@ -224,7 +217,7 @@ class Zend_Db_Adapter_Pdo_Oci extends Zend_Db_Adapter_Pdo_Abstract
         /**
          * Use FETCH_NUM so we are not dependent on the CASE attribute of the PDO connection
          */
-        $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
+        $result = $stmt->fetchAll(Db::FETCH_NUM);
 
         $table_name      = 0;
         $owner           = 1;
@@ -316,7 +309,7 @@ class Zend_Db_Adapter_Pdo_Oci extends Zend_Db_Adapter_Pdo_Abstract
      * @param string $tableName   OPTIONAL Name of table.
      * @param string $primaryKey  OPTIONAL Name of primary key column.
      * @return string
-     * @throws Zend_Db_Adapter_Oracle_Exception
+     * @throws AdapterExceptionOracle
      */
     public function lastInsertId($tableName = null, $primaryKey = null)
     {
@@ -338,21 +331,19 @@ class Zend_Db_Adapter_Pdo_Oci extends Zend_Db_Adapter_Pdo_Abstract
      * @param string $sql
      * @param integer $count
      * @param integer $offset
-     * @throws Zend_Db_Adapter_Exception
+     * @throws AdapterException
      * @return string
      */
     public function limit($sql, $count, $offset = 0)
     {
         $count = intval($count);
         if ($count <= 0) {
-            /** @see Zend_Db_Adapter_Exception */
-            throw new Zend_Db_Adapter_Exception("LIMIT argument count=$count is not valid");
+            throw new AdapterException("LIMIT argument count=$count is not valid");
         }
 
         $offset = intval($offset);
         if ($offset < 0) {
-            /** @see Zend_Db_Adapter_Exception */
-            throw new Zend_Db_Adapter_Exception("LIMIT argument offset=$offset is not valid");
+            throw new AdapterException("LIMIT argument offset=$offset is not valid");
         }
 
         /**
@@ -371,5 +362,4 @@ class Zend_Db_Adapter_Pdo_Oci extends Zend_Db_Adapter_Pdo_Abstract
             WHERE z2.\"zend_db_rownum\" BETWEEN " . ($offset+1) . " AND " . ($offset+$count);
         return $limit_sql;
     }
-
 }

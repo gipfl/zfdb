@@ -12,42 +12,22 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb\Adapter;
 
-
-/**
- * @see Zend_Db_Adapter_Abstract
- */
-
-/**
- * @see Zend_Db_Profiler
- */
+use gipfl\ZfDb\Db;
+use gipfl\ZfDb\Statement\Exception\StatementExceptionMysqli;
+use gipfl\ZfDb\Statement\MysqliStatement;
 
 /**
- * @see Zend_Db_Select
- */
-
-/**
- * @see Zend_Db_Statement_Mysqli
- */
-
-
-/**
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
+class Mysqli extends Adapter
 {
-
     /**
      * Keys are UPPERCASE SQL datatypes or the constants
      * Zend_Db::INT_TYPE, Zend_Db::BIGINT_TYPE, or Zend_Db::FLOAT_TYPE.
@@ -60,26 +40,26 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-        Zend_Db::INT_TYPE    => Zend_Db::INT_TYPE,
-        Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
-        Zend_Db::FLOAT_TYPE  => Zend_Db::FLOAT_TYPE,
-        'INT'                => Zend_Db::INT_TYPE,
-        'INTEGER'            => Zend_Db::INT_TYPE,
-        'MEDIUMINT'          => Zend_Db::INT_TYPE,
-        'SMALLINT'           => Zend_Db::INT_TYPE,
-        'TINYINT'            => Zend_Db::INT_TYPE,
-        'BIGINT'             => Zend_Db::BIGINT_TYPE,
-        'SERIAL'             => Zend_Db::BIGINT_TYPE,
-        'DEC'                => Zend_Db::FLOAT_TYPE,
-        'DECIMAL'            => Zend_Db::FLOAT_TYPE,
-        'DOUBLE'             => Zend_Db::FLOAT_TYPE,
-        'DOUBLE PRECISION'   => Zend_Db::FLOAT_TYPE,
-        'FIXED'              => Zend_Db::FLOAT_TYPE,
-        'FLOAT'              => Zend_Db::FLOAT_TYPE
+        Db::INT_TYPE       => Db::INT_TYPE,
+        Db::BIGINT_TYPE    => Db::BIGINT_TYPE,
+        Db::FLOAT_TYPE     => Db::FLOAT_TYPE,
+        'INT'              => Db::INT_TYPE,
+        'INTEGER'          => Db::INT_TYPE,
+        'MEDIUMINT'        => Db::INT_TYPE,
+        'SMALLINT'         => Db::INT_TYPE,
+        'TINYINT'          => Db::INT_TYPE,
+        'BIGINT'           => Db::BIGINT_TYPE,
+        'SERIAL'           => Db::BIGINT_TYPE,
+        'DEC'              => Db::FLOAT_TYPE,
+        'DECIMAL'          => Db::FLOAT_TYPE,
+        'DOUBLE'           => Db::FLOAT_TYPE,
+        'DOUBLE PRECISION' => Db::FLOAT_TYPE,
+        'FIXED'            => Db::FLOAT_TYPE,
+        'FLOAT'            => Db::FLOAT_TYPE
     );
 
     /**
-     * @var Zend_Db_Statement_Mysqli
+     * @var MysqliStatement
      */
     protected $_stmt = null;
 
@@ -88,7 +68,7 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
      *
      * @var string
      */
-    protected $_defaultStmtClass = 'Zend_Db_Statement_Mysqli';
+    protected $_defaultStmtClass = MysqliStatement::class;
 
     /**
      * Quote a raw string.
@@ -120,6 +100,7 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
      * Returns a list of the tables in the database.
      *
      * @return array
+     * @throws StatementExceptionMysqli
      */
     public function listTables()
     {
@@ -133,10 +114,7 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
             }
             $queryResult->close();
         } else {
-            /**
-             * @see Zend_Db_Adapter_Mysqli_Exception
-             */
-            throw new Zend_Db_Adapter_Mysqli_Exception($this->getConnection()->error);
+            throw new StatementExceptionMysqli($this->getConnection()->error);
         }
         return $result;
     }
@@ -192,10 +170,7 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
             }
             $queryResult->close();
         } else {
-            /**
-             * @see Zend_Db_Adapter_Mysqli_Exception
-             */
-            throw new Zend_Db_Adapter_Mysqli_Exception($this->getConnection()->error);
+            throw new StatementExceptionMysqli($this->getConnection()->error);
         }
 
         $desc = array();
@@ -269,7 +244,7 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
      * Creates a connection to the database.
      *
      * @return void
-     * @throws Zend_Db_Adapter_Mysqli_Exception
+     * @throws StatementExceptionMysqli
      */
     protected function _connect()
     {
@@ -278,10 +253,7 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
         }
 
         if (!extension_loaded('mysqli')) {
-            /**
-             * @see Zend_Db_Adapter_Mysqli_Exception
-             */
-            throw new Zend_Db_Adapter_Mysqli_Exception('The Mysqli extension is required for this adapter but the extension is not loaded');
+            throw new StatementExceptionMysqli('The Mysqli extension is required for this adapter but the extension is not loaded');
         }
 
         if (isset($this->_config['port'])) {
@@ -326,10 +298,7 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
         if ($_isConnected === false || mysqli_connect_errno()) {
 
             $this->closeConnection();
-            /**
-             * @see Zend_Db_Adapter_Mysqli_Exception
-             */
-            throw new Zend_Db_Adapter_Mysqli_Exception(mysqli_connect_error());
+            throw new StatementExceptionMysqli(mysqli_connect_error());
         }
 
         if (!empty($this->_config['charset'])) {
@@ -364,7 +333,7 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
      * Prepare a statement and return a PDOStatement-like object.
      *
      * @param  string  $sql  SQL query
-     * @return Zend_Db_Statement_Mysqli
+     * @return MysqliStatement|bool
      */
     public function prepare($sql)
     {
@@ -445,30 +414,23 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
      *
      * @param int $mode
      * @return void
-     * @throws Zend_Db_Adapter_Mysqli_Exception
+     * @throws StatementExceptionMysqli
      */
     public function setFetchMode($mode)
     {
         switch ($mode) {
-            case Zend_Db::FETCH_LAZY:
-            case Zend_Db::FETCH_ASSOC:
-            case Zend_Db::FETCH_NUM:
-            case Zend_Db::FETCH_BOTH:
-            case Zend_Db::FETCH_NAMED:
-            case Zend_Db::FETCH_OBJ:
+            case Db::FETCH_LAZY:
+            case Db::FETCH_ASSOC:
+            case Db::FETCH_NUM:
+            case Db::FETCH_BOTH:
+            case Db::FETCH_NAMED:
+            case Db::FETCH_OBJ:
                 $this->_fetchMode = $mode;
                 break;
-            case Zend_Db::FETCH_BOUND: // bound to PHP variable
-                /**
-                 * @see Zend_Db_Adapter_Mysqli_Exception
-                 */
-                throw new Zend_Db_Adapter_Mysqli_Exception('FETCH_BOUND is not supported yet');
-                break;
+            case Db::FETCH_BOUND: // bound to PHP variable
+                throw new StatementExceptionMysqli('FETCH_BOUND is not supported yet');
             default:
-                /**
-                 * @see Zend_Db_Adapter_Mysqli_Exception
-                 */
-                throw new Zend_Db_Adapter_Mysqli_Exception("Invalid fetch mode '$mode' specified");
+                throw new StatementExceptionMysqli("Invalid fetch mode '$mode' specified");
         }
     }
 
@@ -479,23 +441,18 @@ class Zend_Db_Adapter_Mysqli extends Zend_Db_Adapter_Abstract
      * @param int $count
      * @param int $offset OPTIONAL
      * @return string
+     * @throws StatementExceptionMysqli
      */
     public function limit($sql, $count, $offset = 0)
     {
         $count = intval($count);
         if ($count <= 0) {
-            /**
-             * @see Zend_Db_Adapter_Mysqli_Exception
-             */
-            throw new Zend_Db_Adapter_Mysqli_Exception("LIMIT argument count=$count is not valid");
+            throw new StatementExceptionMysqli("LIMIT argument count=$count is not valid");
         }
 
         $offset = intval($offset);
         if ($offset < 0) {
-            /**
-             * @see Zend_Db_Adapter_Mysqli_Exception
-             */
-            throw new Zend_Db_Adapter_Mysqli_Exception("LIMIT argument offset=$offset is not valid");
+            throw new StatementExceptionMysqli("LIMIT argument offset=$offset is not valid");
         }
 
         $sql .= " LIMIT $count";

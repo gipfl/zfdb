@@ -12,32 +12,23 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb\Adapter\Pdo;
 
-
-/**
- * @see Zend_Db_Adapter_Pdo_Abstract
- */
-
+use gipfl\ZfDb\Adapter\Exception\AdapterException;
+use gipfl\ZfDb\Db;
 
 /**
  * Class for connecting to SQLite2 and SQLite3 databases and performing common operations.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Adapter_Pdo_Sqlite extends Zend_Db_Adapter_Pdo_Abstract
+class Sqlite extends PdoAdapter
 {
-
     /**
      * PDO type
      *
@@ -57,11 +48,11 @@ class Zend_Db_Adapter_Pdo_Sqlite extends Zend_Db_Adapter_Pdo_Abstract
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
     protected $_numericDataTypes = array(
-        Zend_Db::INT_TYPE    => Zend_Db::INT_TYPE,
-        Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
-        Zend_Db::FLOAT_TYPE  => Zend_Db::FLOAT_TYPE,
-        'INTEGER'            => Zend_Db::BIGINT_TYPE,
-        'REAL'               => Zend_Db::FLOAT_TYPE
+        Db::INT_TYPE    => Db::INT_TYPE,
+        Db::BIGINT_TYPE => Db::BIGINT_TYPE,
+        Db::FLOAT_TYPE  => Db::FLOAT_TYPE,
+        'INTEGER'       => Db::BIGINT_TYPE,
+        'REAL'          => Db::FLOAT_TYPE
     );
 
     /**
@@ -98,14 +89,13 @@ class Zend_Db_Adapter_Pdo_Sqlite extends Zend_Db_Adapter_Pdo_Abstract
      * Throw exceptions if any are missing.
      *
      * @param array $config
-     * @throws Zend_Db_Adapter_Exception
+     * @throws AdapterException
      */
     protected function _checkRequiredOptions(array $config)
     {
         // we need at least a dbname
         if (! array_key_exists('dbname', $config)) {
-            /** @see Zend_Db_Adapter_Exception */
-            throw new Zend_Db_Adapter_Exception("Configuration array must have a key for 'dbname' that names the database instance");
+            throw new AdapterException("Configuration array must have a key for 'dbname' that names the database instance");
         }
     }
 
@@ -121,7 +111,7 @@ class Zend_Db_Adapter_Pdo_Sqlite extends Zend_Db_Adapter_Pdo_Abstract
      * Special configuration for SQLite behavior: make sure that result sets
      * contain keys like 'column' instead of 'table.column'.
      *
-     * @throws Zend_Db_Adapter_Exception
+     * @throws AdapterException
      */
     protected function _connect()
     {
@@ -137,15 +127,13 @@ class Zend_Db_Adapter_Pdo_Sqlite extends Zend_Db_Adapter_Pdo_Abstract
         $retval = $this->_connection->exec('PRAGMA full_column_names=0');
         if ($retval === false) {
             $error = $this->_connection->errorInfo();
-            /** @see Zend_Db_Adapter_Exception */
-            throw new Zend_Db_Adapter_Exception($error[2]);
+            throw new AdapterException($error[2]);
         }
 
         $retval = $this->_connection->exec('PRAGMA short_column_names=1');
         if ($retval === false) {
             $error = $this->_connection->errorInfo();
-            /** @see Zend_Db_Adapter_Exception */
-            throw new Zend_Db_Adapter_Exception($error[2]);
+            throw new AdapterException($error[2]);
         }
     }
 
@@ -206,7 +194,7 @@ class Zend_Db_Adapter_Pdo_Sqlite extends Zend_Db_Adapter_Pdo_Abstract
         /**
          * Use FETCH_NUM so we are not dependent on the CASE attribute of the PDO connection
          */
-        $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
+        $result = $stmt->fetchAll(Db::FETCH_NUM);
 
         $cid        = 0;
         $name       = 1;
@@ -270,14 +258,12 @@ class Zend_Db_Adapter_Pdo_Sqlite extends Zend_Db_Adapter_Pdo_Abstract
     {
         $count = intval($count);
         if ($count <= 0) {
-            /** @see Zend_Db_Adapter_Exception */
-            throw new Zend_Db_Adapter_Exception("LIMIT argument count=$count is not valid");
+            throw new AdapterException("LIMIT argument count=$count is not valid");
         }
 
         $offset = intval($offset);
         if ($offset < 0) {
-            /** @see Zend_Db_Adapter_Exception */
-            throw new Zend_Db_Adapter_Exception("LIMIT argument offset=$offset is not valid");
+            throw new AdapterException("LIMIT argument offset=$offset is not valid");
         }
 
         $sql .= " LIMIT $count";

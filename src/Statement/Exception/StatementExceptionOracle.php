@@ -12,48 +12,38 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb\Statement\Exception;
 
 /**
- * Zend_Db_Adapter_Exception
- */
-
-/**
- * Zend_Db_Adapter_Oracle_Exception
- *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Adapter_Oracle_Exception extends Zend_Db_Adapter_Exception
-{
-   protected $message = 'Unknown exception';
-   protected $code = 0;
 
-   function __construct($error = null, $code = 0) {
-       if (is_array($error)) {
+class StatementExceptionOracle extends StatementException
+{
+    protected $message = 'Unknown exception';
+    protected $code = 0;
+
+    public function __construct($error = null, $code = 0)
+    {
+        if (is_array($error)) {
             if (!isset($error['offset'])) {
-                $this->message = $error['code'] .' '. $error['message'];
+                $this->message = $error['code']." ".$error['message'];
             } else {
-                $this->message = $error['code'] .' '. $error['message']." "
-                               . substr($error['sqltext'], 0, $error['offset'])
-                               . "*"
-                               . substr($error['sqltext'], $error['offset']);
+                $this->message = $error['code']." ".$error['message']." ";
+                $this->message .= substr($error['sqltext'], 0, $error['offset']);
+                $this->message .= "*";
+                $this->message .= substr($error['sqltext'], $error['offset']);
             }
             $this->code = $error['code'];
-       } else if (is_string($error)) {
-           $this->message = $error;
-       }
-       if (!$this->code && $code) {
-           $this->code = $code;
-       }
-   }
+        }
+        if (!$this->code && $code) {
+            $this->code = $code;
+        }
+        parent::__construct($this->message, $this->code);
+    }
 }

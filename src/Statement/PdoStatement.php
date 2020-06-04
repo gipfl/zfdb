@@ -12,17 +12,18 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Statement
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb\Statement;
 
-/**
- * @see Zend_Db_Statement
- */
+use gipfl\ZfDb\Statement;
+use gipfl\ZfDb\Statement\Exception\StatementException;
+use IteratorAggregate;
+use IteratorIterator;
+use PDO;
+use PDOException;
 
 /**
  * Proxy class to wrap a PDOStatement object.
@@ -30,15 +31,11 @@
  * matching method in PDOStatement.  PDOExceptions thrown by PDOStatement
  * are re-thrown as Zend_Db_Statement_Exception.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Statement
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggregate
+class PdoStatement extends Statement implements IteratorAggregate
 {
-
     /**
      * @var int
      */
@@ -49,14 +46,14 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      *
      * @param string $sql
      * @return void
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     protected function _prepare($sql)
     {
         try {
             $this->_stmt = $this->_adapter->getConnection()->prepare($sql);
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -68,7 +65,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      * @param mixed  $param  Reference to the PHP variable containing the value.
      * @param mixed  $type   OPTIONAL
      * @return bool
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function bindColumn($column, &$param, $type = null)
     {
@@ -79,7 +76,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
                 return $this->_stmt->bindColumn($column, $param, $type);
             }
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -92,7 +89,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      * @param mixed $length    OPTIONAL Length of SQL parameter.
      * @param mixed $options   OPTIONAL Other options.
      * @return bool
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     protected function _bindParam($parameter, &$variable, $type = null, $length = null, $options = null)
     {
@@ -110,7 +107,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
             }
             return $this->_stmt->bindParam($parameter, $variable, $type, $length, $options);
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -121,7 +118,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      * @param mixed $value     Scalar value to bind to the parameter.
      * @param mixed $type      OPTIONAL Datatype of the parameter.
      * @return bool
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function bindValue($parameter, $value, $type = null)
     {
@@ -138,7 +135,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
                 return $this->_stmt->bindValue($parameter, $value, $type);
             }
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -146,14 +143,14 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      * Closes the cursor, allowing the statement to be executed again.
      *
      * @return bool
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function closeCursor()
     {
         try {
             return $this->_stmt->closeCursor();
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -162,14 +159,14 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      * Returns null if the statement has no result set metadata.
      *
      * @return int The number of columns.
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function columnCount()
     {
         try {
             return $this->_stmt->columnCount();
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -178,14 +175,14 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      * the statement handle.
      *
      * @return string error code.
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function errorCode()
     {
         try {
             return $this->_stmt->errorCode();
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -194,14 +191,14 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      * last operation on the statement handle.
      *
      * @return array
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function errorInfo()
     {
         try {
             return $this->_stmt->errorInfo();
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -210,7 +207,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      *
      * @param array $params OPTIONAL Values to bind to parameter placeholders.
      * @return bool
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function _execute(array $params = null)
     {
@@ -222,7 +219,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
             }
         } catch (PDOException $e) {
             $message = sprintf('%s, query was: %s', $e->getMessage(), $this->_stmt->queryString);
-            throw new Zend_Db_Statement_Exception($message, (int) $e->getCode(), $e);
+            throw new StatementException($message, (int) $e->getCode(), $e);
         }
     }
 
@@ -233,7 +230,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      * @param int $cursor OPTIONAL Absolute, relative, or other.
      * @param int $offset OPTIONAL Number for absolute or relative cursors.
      * @return mixed Array, object, or scalar depending on fetch mode.
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function fetch($style = null, $cursor = null, $offset = null)
     {
@@ -243,7 +240,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
         try {
             return $this->_stmt->fetch($style, $cursor, $offset);
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -263,7 +260,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      * @param int $style OPTIONAL Fetch mode.
      * @param int $col   OPTIONAL Column number, if fetch mode is by column.
      * @return array Collection of rows, each in a format by the fetch mode.
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function fetchAll($style = null, $col = null)
     {
@@ -280,7 +277,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
                 return $this->_stmt->fetchAll($style);
             }
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -289,14 +286,14 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      *
      * @param int $col OPTIONAL Position of the column to fetch.
      * @return string
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function fetchColumn($col = 0)
     {
         try {
             return $this->_stmt->fetchColumn($col);
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -306,14 +303,14 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      * @param string $class  OPTIONAL Name of the class to create.
      * @param array  $config OPTIONAL Constructor arguments for the class.
      * @return mixed One object instance of the specified class.
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function fetchObject($class = 'stdClass', array $config = array())
     {
         try {
             return $this->_stmt->fetchObject($class, $config);
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -322,14 +319,14 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      *
      * @param integer $key Attribute name.
      * @return mixed      Attribute value.
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function getAttribute($key)
     {
         try {
             return $this->_stmt->getAttribute($key);
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -338,14 +335,14 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      *
      * @param int $column
      * @return mixed
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function getColumnMeta($column)
     {
         try {
             return $this->_stmt->getColumnMeta($column);
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -355,14 +352,14 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      * the results of multiple queries.
      *
      * @return bool
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function nextRowset()
     {
         try {
             return $this->_stmt->nextRowset();
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -372,14 +369,14 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      * statement object.
      *
      * @return int     The number of rows affected.
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function rowCount()
     {
         try {
             return $this->_stmt->rowCount();
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -389,14 +386,14 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      * @param string $key Attribute name.
      * @param mixed  $val Attribute value.
      * @return bool
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function setAttribute($key, $val)
     {
         try {
             return $this->_stmt->setAttribute($key, $val);
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -405,7 +402,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      *
      * @param int   $mode The fetch mode.
      * @return bool
-     * @throws Zend_Db_Statement_Exception
+     * @throws StatementException
      */
     public function setFetchMode($mode)
     {
@@ -413,8 +410,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
         try {
             return $this->_stmt->setFetchMode($mode);
         } catch (PDOException $e) {
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
     }
-
 }

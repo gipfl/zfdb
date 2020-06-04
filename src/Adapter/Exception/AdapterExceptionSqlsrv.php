@@ -12,25 +12,21 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Statement
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb\Adapter\Exception;
+
+use Exception;
 
 /**
- * @see Zend_Db_Statement_Exception
- */
-
-/**
- * @package    Zend_Db
- * @subpackage Statement
+ * Zend_Db_Adapter_Sqlsrv_Exception
+ *
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Statement_Sqlsrv_Exception extends Zend_Db_Statement_Exception
+class AdapterExceptionSqlsrv extends AdapterException
 {
     /**
      * Constructor
@@ -44,7 +40,7 @@ class Zend_Db_Statement_Sqlsrv_Exception extends Zend_Db_Statement_Exception
      */
     public function __construct($message = null, $code = 0)
     {
-       if (is_array($message)) {
+        if (is_array($message)) {
             // Error should be array of errors
             // We only need first one (?)
             if (isset($message[0])) {
@@ -53,8 +49,7 @@ class Zend_Db_Statement_Sqlsrv_Exception extends Zend_Db_Statement_Exception
 
             $code    = (int)    $message['code'];
             $message = (string) $message['message'];
-       }
-       parent::__construct($message, $code);
-   }
+        }
+        parent::__construct($message, $code, new Exception($message, $code));
+    }
 }
-

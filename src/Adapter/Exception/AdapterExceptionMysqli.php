@@ -12,45 +12,19 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
+ *
  */
+namespace gipfl\ZfDb\Adapter\Exception;
 
 /**
- * Zend_Db_Exception
- */
-
-/**
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Adapter
+ * Zend_Db_Adapter_Mysqli_Exception
+ *
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Adapter_Exception extends Zend_Db_Exception
+class AdapterExceptionMysqli extends AdapterException
 {
-    protected $_chainedException = null;
-
-    public function __construct($message = '', $code = 0, Exception $e = null)
-    {
-        if ($e && (0 === $code)) {
-            $code = $e->getCode();
-        }
-        parent::__construct($message, $code, $e);
-    }
-
-    public function hasChainedException()
-    {
-        return ($this->getPrevious() !== null);
-    }
-
-    public function getChainedException()
-    {
-        return $this->getPrevious();
-    }
-
 }

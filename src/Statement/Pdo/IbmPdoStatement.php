@@ -12,17 +12,15 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Statement
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
+namespace gipfl\ZfDb\Statement\Pdo;
 
-/**
- * @see Zend_Db_Statement_Pdo
- */
+use gipfl\ZfDb\Statement\PdoStatement;
+use gipfl\ZfDb\Statement\Exception\StatementException;
+use PDOException;
 
 /**
  * Proxy class to wrap a PDOStatement object for IBM Databases.
@@ -30,15 +28,11 @@
  * matching method in PDOStatement.  PDOExceptions thrown by PDOStatement
  * are re-thrown as Zend_Db_Statement_Exception.
  *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Statement
  * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Db_Statement_Pdo_Oci extends Zend_Db_Statement_Pdo
+class IbmPdoStatement extends PdoStatement
 {
-
     /**
     * Returns an array containing all of the result set rows.
     *
@@ -49,13 +43,13 @@ class Zend_Db_Statement_Pdo_Oci extends Zend_Db_Statement_Pdo
     * @param int $style OPTIONAL Fetch mode.
     * @param int $col   OPTIONAL Column number, if fetch mode is by column.
     * @return array Collection of rows, each in a format by the fetch mode.
-    * @throws Zend_Db_Statement_Exception
+    * @throws StatementException
     */
     public function fetchAll($style = null, $col = null)
     {
         $data = parent::fetchAll($style, $col);
         $results = array();
-        $remove = $this->_adapter->foldCase('zend_db_rownum');
+        $remove = $this->_adapter->foldCase('ZEND_DB_ROWNUM');
 
         foreach ($data as $row) {
             if (is_array($row) && array_key_exists($remove, $row)) {
@@ -66,25 +60,27 @@ class Zend_Db_Statement_Pdo_Oci extends Zend_Db_Statement_Pdo
         return $results;
     }
 
-
     /**
-     * Fetches a row from the result set.
+     * Binds a parameter to the specified variable name.
      *
-     * @param int $style  OPTIONAL Fetch mode for this fetch operation.
-     * @param int $cursor OPTIONAL Absolute, relative, or other.
-     * @param int $offset OPTIONAL Number for absolute or relative cursors.
-     * @return mixed Array, object, or scalar depending on fetch mode.
-     * @throws Zend_Db_Statement_Exception
+     * @param mixed $parameter Name the parameter, either integer or string.
+     * @param mixed $variable  Reference to PHP variable containing the value.
+     * @param mixed $type      OPTIONAL Datatype of SQL parameter.
+     * @param mixed $length    OPTIONAL Length of SQL parameter.
+     * @param mixed $options   OPTIONAL Other options.
+     * @return bool
+     * @throws StatementException
      */
-    public function fetch($style = null, $cursor = null, $offset = null)
+    public function _bindParam($parameter, &$variable, $type = null, $length = null, $options = null)
     {
-        $row = parent::fetch($style, $cursor, $offset);
-
-        $remove = $this->_adapter->foldCase('zend_db_rownum');
-        if (is_array($row) && array_key_exists($remove, $row)) {
-            unset($row[$remove]);
+        try {
+            if (($type === null) && ($length === null) && ($options === null)) {
+                return $this->_stmt->bindParam($parameter, $variable);
+            } else {
+                return $this->_stmt->bindParam($parameter, $variable, $type, $length, $options);
+            }
+        } catch (PDOException $e) {
+            throw new StatementException($e->getMessage(), $e->getCode(), $e);
         }
-
-        return $row;
     }
 }
