@@ -319,7 +319,7 @@ class Mssql extends PdoAdapter
             throw new AdapterException("LIMIT argument offset=$offset is not valid");
         }
 
-        $sql .= "OFFSET $offset ROWS FETCH NEXT $count ROWS ONLY";
+        $sql .= " OFFSET $offset ROWS FETCH NEXT $count ROWS ONLY";
 
         return $sql;
     }
