@@ -232,7 +232,7 @@ class PdoStatement extends Statement implements IteratorAggregate
      * @return mixed Array, object, or scalar depending on fetch mode.
      * @throws StatementException
      */
-    public function fetch($style = null, $cursor = null, $offset = null)
+    public function fetch($style = null, $cursor = PDO::FETCH_ORI_NEXT, $offset = 0)
     {
         if ($style === null) {
             $style = $this->_fetchMode;
@@ -249,6 +249,7 @@ class PdoStatement extends Statement implements IteratorAggregate
      *
      * @return IteratorIterator
      */
+    #[\ReturnTypeWillChange]
     public function getIterator()
     {
         return new IteratorIterator($this->_stmt);
