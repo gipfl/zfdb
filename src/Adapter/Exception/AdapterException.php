@@ -33,6 +33,7 @@ class AdapterException extends DbException
     {
         if ($e && (0 === $code)) {
             $code = $e->getCode();
+            $code = ctype_digit($code) ? (int) $code : 0;
         }
         parent::__construct($message, $code, $e);
     }

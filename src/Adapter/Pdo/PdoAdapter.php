@@ -248,7 +248,9 @@ abstract class PdoAdapter extends Adapter
 
             return $affected;
         } catch (PDOException $e) {
-            throw new AdapterException($e->getMessage(), $e->getCode(), $e);
+            $code = $e->getCode();
+            $code = ctype_digit($code) ? (int) $code : 0;
+            throw new AdapterException($e->getMessage(), $code, $e);
         }
     }
 
